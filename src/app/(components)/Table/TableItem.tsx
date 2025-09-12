@@ -13,7 +13,7 @@ function TableItem<T>({ row, columns }: Props<T>) {
         <div
           key={index}
           style={{ width: column.width }}
-          className="flex items-center px-2 py-3 border-r border-gray-300 last:border-r-0"
+          className="flex items-center text-black px-2 py-3 border-r border-gray-300 last:border-r-0"
         >
           {column.render ? column.render(row) : null}
         </div>

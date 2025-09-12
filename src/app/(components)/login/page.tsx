@@ -77,7 +77,7 @@ function Page() {
             }
 
             login(data.token);
-            
+
             if (!data.is_consent_filled) {
                 router.push('/consent');
             } else {
@@ -89,16 +89,16 @@ function Page() {
         }
     };
 
-    const dummy = () =>{
+    const dummy = () => {
         router.push('/dashboard');
     }
 
     return (
         <>
-            <div className="bg-white lg:h-[100vh] flex justify-center items-center">
-                <div className="flex lg:h-[100%] lg:w-[100%] lg:p-3">
-                    <div className="bg-[url('/login.png')] bg-cover bg-center lg:w-[50%] flex justify-center items-center lg:h-[100%] lg:rounded-4xl">
-                        <h1 className="text-black lg:mb-90 font-medium">Login to Manage Your Taxes Safely.</h1>
+            <div className="bg-white lg:h-[100vh] w-[100vw] flex justify-center items-center">
+                <div className="flex lg:h-[100%] lg:w-[100%]">
+                    <div className="bg-[url('/images/login.png')] bg-cover bg-center lg:w-[50%] flex justify-center items-center lg:h-[100%] lg:rounded-4xl">
+                        <h1 className="text-black lg:mb-128 lg:mr-110 font-medium text-lg">Vertix Tax</h1>
                     </div>
                     <div className="bg-red-00 lg:w-[50%] lg:h-[100%] lg:p-4 flex flex-col items-center justify-end">
                         <h1 className="lg:text-2xl font-semibold text-black">Login</h1>
