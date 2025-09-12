@@ -5,7 +5,7 @@ import { TableProps } from "./types"
 
 function Table<T>({ columns, data }: TableProps<T>) {
   return (
-    <div className="w-full flex flex-col shadow-medium rounded-md overflow-hidden">
+    <div className="w-full flex flex-col shadow rounded-md overflow-hidden">
       <TableHeader columns={columns} />
       {data?.map((row, index) => (
         <TableItem key={index} row={row} columns={columns} />

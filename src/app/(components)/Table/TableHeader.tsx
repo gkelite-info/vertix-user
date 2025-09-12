@@ -12,7 +12,7 @@ function TableHeader<T>({ columns }: Props<T>) {
         <span
           key={index}
           style={{ width: column.width || "auto" }}
-          className="text-[20px] font-medium text-[#FFFEFE]  px-2 py-3"
+          className="text-[17px] font-medium text-[#FFFEFE]  px-2 py-3"
         >
           {column.name}
         </span>
