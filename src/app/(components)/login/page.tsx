@@ -14,7 +14,7 @@ function Page() {
   const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
   const [remember, setRemember] = useState(false);
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  //   const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const handleEmailChange = (e: { target: { value: string } }) => {
     const value = e.target.value;
