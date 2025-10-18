@@ -42,18 +42,19 @@ export default function Dashboard() {
     { name: "Occupation", width: "34%", render: (row) => row.occupation },
     { name: "Country", render: (row) => row.country },
   ]
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true)
-      const data = await getAllCustomers(search)
-      setData(data)
-    } catch (error: any) {
-      toast.error(error.message || "Failed to fetch clients")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true)
+        const data = await getAllCustomers(search)
+        setData(data)
+      } catch (error: any) {
+        toast.error(error.message || "Failed to fetch clients")
+      } finally {
+        setIsLoading(false)
+      }
+    }
     if (isFirstRender.current) {
       isFirstRender.current = false
       return

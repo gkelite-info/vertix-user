@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
 // export const getAllCustomers = async (search?: string) => {
