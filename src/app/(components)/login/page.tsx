@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { useAuth } from "../AuthContext"
 import { Icon } from "@iconify/react/dist/iconify.js"
@@ -14,7 +15,7 @@ function Page() {
   const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
-  const [error, setError] = useState("")
+  //const [error, setError] = useState("")
   const [remember, setRemember] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   //   const [alertMsg, setAlertMsg] = useState<string | null>(null);
