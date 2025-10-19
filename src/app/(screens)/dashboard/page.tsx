@@ -44,6 +44,9 @@ export default function Dashboard() {
   ]
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+    }
     const fetchUsers = async () => {
       try {
         setIsLoading(true)
@@ -54,10 +57,6 @@ export default function Dashboard() {
       } finally {
         setIsLoading(false)
       }
-    }
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
     }
     fetchUsers()
   }, [search])
