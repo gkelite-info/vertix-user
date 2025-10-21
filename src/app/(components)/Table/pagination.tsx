@@ -10,7 +10,7 @@ type Props = {
 export default function Pagination({
   totalItems,
   currentPage,
-  pageSize = 10,
+  pageSize = 25,
   onPageChange,
 }: Props) {
   const totalPages = Math.ceil(totalItems / pageSize)

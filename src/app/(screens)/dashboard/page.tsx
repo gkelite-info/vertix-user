@@ -20,7 +20,7 @@ type Customer = {
   country: string
 }
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 25
 
 export default function Dashboard() {
   const [search, setSearch] = useState("")
@@ -30,16 +30,16 @@ export default function Dashboard() {
   const isFirstRender = useRef<boolean>(true)
 
   const columns: TableColumn<Customer>[] = [
-    { name: "First Name", width: "20%", render: (row) => row.firstname },
-    { name: "Last Name", width: "20%", render: (row) => row.lastname },
-    { name: "Email", width: "48%", render: (row) => row.email },
-    { name: "Phone", width: "12%", render: (row) => row.phone },
+    { name: "First Name",  render: (row) => row.firstname },
+    { name: "Last Name",  render: (row) => row.lastname },
+    { name: "Email",  render: (row) => row.email },
+    { name: "Phone",  render: (row) => row.phone },
     {
       name: "Date of Birth",
-      width: "25%",
+      
       render: (row) => formatDateMMDDYYYY(row.dob),
     },
-    { name: "Occupation", width: "34%", render: (row) => row.occupation },
+    { name: "Occupation",  render: (row) => row.occupation },
     { name: "Country", render: (row) => row.country },
   ]
 
@@ -73,7 +73,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="bg-[#EBEBEB] flex justify-center items-center w-full flex-col">
+      <div className="bg-[#EBEBEB] flex justify-center items-center w-full flex-col h-[100%]">
         <div className="flex items-center bg-[#1D2B48] rounded-full px-3 py-2 w-[60%] max-w-3xl">
           <Search className="text-[#FFFFFF] w-5 h-5 mr-2" />
           <input
@@ -86,7 +86,7 @@ export default function Dashboard() {
         </div>
 
         {/* Table */}
-        <div className="mt-10 w-full flex flex-col h-[70%] min-h-[400px]">
+        <div className="mt-10 w-full flex flex-col justify-between h-[100%]">
           <div className="flex-grow overflow-auto scrollbar-hide">
             <Table
               columns={columns}
@@ -99,7 +99,7 @@ export default function Dashboard() {
               <Pagination
                 totalItems={data.length} // total data from API
                 currentPage={currentPage}
-                pageSize={10} // items per page
+                pageSize={25} // items per page
                 onPageChange={(page) => setCurrentPage(page)}
               />
             )}
