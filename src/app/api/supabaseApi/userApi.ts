@@ -73,9 +73,27 @@ export const getAllCustomers = async (search?: string) => {
     }
 
     // 🔹 CASE 2: Single search term — match by first/last/email/phone
-    const { data, error } = await query.or(
-      `firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
-    )
+    // const { data, error } = await query.or(
+    //   `customerId.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
+    // )
+    let data: any[] = []
+    let error: any = null
+
+    if (!isNaN(Number(searchTerm))) {
+      // 🟩 Numeric input → search by customerId or phone
+      const res = await query.or(
+        `customerId.eq.${Number(searchTerm)},phone.ilike.%${searchTerm}%`
+      )
+      data = res.data || []
+      error = res.error
+    } else {
+      // 🟩 Text input → search by name, email, phone
+      const res = await query.or(
+        `firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
+      )
+      data = res.data || []
+      error = res.error
+    }
 
     if (error) throw new Error(error.message)
     return data || []
@@ -92,7 +110,7 @@ export const getUser = async () => {
     } = await supabase.auth.getUser()
     if (authError || !user) throw new Error("Not authenticated")
     const customerId = user.id
-    const { data, error } = await supabaseCustomer
+    const { data, error } = await supabase
       .from("vertixusers")
       .select("*")
       .eq("auth_id", customerId)

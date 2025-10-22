@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 
 type Customer = {
+  customerId: string
   firstname: string
   lastname: string
   email: string
@@ -30,16 +31,17 @@ export default function Dashboard() {
   const isFirstRender = useRef<boolean>(true)
 
   const columns: TableColumn<Customer>[] = [
-    { name: "First Name",  render: (row) => row.firstname },
-    { name: "Last Name",  render: (row) => row.lastname },
-    { name: "Email",  render: (row) => row.email },
-    { name: "Phone",  render: (row) => row.phone },
+    { name: "ClientId", render: (row) => row.customerId },
+    { name: "First Name", render: (row) => row.firstname },
+    { name: "Last Name", render: (row) => row.lastname },
+    { name: "Email", render: (row) => row.email },
+    { name: "Phone", render: (row) => row.phone },
     {
       name: "Date of Birth",
-      
+
       render: (row) => formatDateMMDDYYYY(row.dob),
     },
-    { name: "Occupation",  render: (row) => row.occupation },
+    { name: "Occupation", render: (row) => row.occupation },
     { name: "Country", render: (row) => row.country },
   ]
 
@@ -58,7 +60,9 @@ export default function Dashboard() {
         setIsLoading(false)
       }
     }
-    fetchUsers()
+    if (search.trim().length > 0) {
+      fetchUsers()
+    }
   }, [search])
 
   const paginatedData = data.slice(
@@ -73,8 +77,8 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="bg-[#EBEBEB] flex justify-center items-center w-full flex-col h-[100%]">
-        <div className="flex items-center bg-[#1D2B48] rounded-full px-3 py-2 w-[60%] max-w-3xl">
+      <div className="bg-[#EBEBEB] flex  items-center w-full flex-col h-[100%]">
+        <div className="flex items-center bg-[#1D2B48] rounded-full px-3 py-2.5 w-[60%] max-w-3xl">
           <Search className="text-[#FFFFFF] w-5 h-5 mr-2" />
           <input
             type="text"
@@ -86,25 +90,27 @@ export default function Dashboard() {
         </div>
 
         {/* Table */}
-        <div className="mt-10 w-full flex flex-col justify-between h-[100%]">
-          <div className="flex-grow overflow-auto scrollbar-hide">
-            <Table
-              columns={columns}
-              data={paginatedData}
-              isLoading={isLoading}
-            />
-          </div>
-          <div className="mt-auto py-2">
-            {data.length > 0 && (
-              <Pagination
-                totalItems={data.length} // total data from API
-                currentPage={currentPage}
-                pageSize={25} // items per page
-                onPageChange={(page) => setCurrentPage(page)}
+        {search.trim().length > 0 && (
+          <div className="mt-10 w-full flex flex-col justify-between h-[100%]">
+            <div className="flex-grow overflow-auto scrollbar-hide">
+              <Table
+                columns={columns}
+                data={paginatedData}
+                isLoading={isLoading}
               />
-            )}
+            </div>
+            <div className="mt-auto py-2">
+              {data.length > 0 && (
+                <Pagination
+                  totalItems={data.length} // total data from API
+                  currentPage={currentPage}
+                  pageSize={25} // items per page
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   )
