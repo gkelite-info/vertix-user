@@ -1,40 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
-// export const getAllCustomers = async (search?: string) => {
-//   try {
-//     let query = supabaseCustomer.from("vertixcustomers").select("*")
-
-//     if (search && search.trim()) {
-//       const searchTerm = search.trim()
-
-//       // Split name if user types "John Doe"
-//       const [first, last] = searchTerm.split(" ")
-
-//       if (last) {
-//         // full name search: first + last
-//         query = query.or(
-//           `firstname.ilike.%${first}%,lastname.ilike.%${last}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
-//         )
-//       } else {
-//         // single field search
-//         query = query.or(
-//           `firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
-//         )
-//       }
-//     }
-
-//     const { data, error } = await query
-
-//     if (error) throw new Error(error.message)
-
-//     return data || []
-//   } catch (err: any) {
-//     console.error("Supabase fetch error:", err.message)
-//     return []
-//   }
-// }
-
 export const getAllCustomers = async (search?: string) => {
   try {
     // Base query
@@ -102,21 +68,26 @@ export const getAllCustomers = async (search?: string) => {
     return []
   }
 }
+
 export const getUser = async () => {
   try {
+    // 1️⃣ Get Supabase Auth User
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
+
     if (authError || !user) throw new Error("Not authenticated")
-    const customerId = user.id
-    const { data, error } = await supabase
+
+    // 2️⃣ Get App User from your table (vertixusers)
+    const { data: appUser, error } = await supabase
       .from("vertixusers")
       .select("*")
-      .eq("auth_id", customerId)
+      .eq("email", user.email)
       .single()
+
     if (error) throw error
-    return data
+    return appUser
   } catch (error: any) {
     console.error("Error fetching customer:", error.message)
     throw error
