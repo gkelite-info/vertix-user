@@ -2,12 +2,24 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 
 const navItems = [
   { label: "View Clients", href: "/dashboard" },
   { label: "Pre-Register Clients", href: "/pre-register" },
   { label: "Manage Clients", href: "/manage-client" },
-  { label: "Manage Tax Organizer", href: "/manage-tax" },
+  //{ label: "Manage Tax Organizer", href: "/manage-tax" },
+  {
+    label: "Manage Tax Organizer",
+    href: "#",
+    subItems: [
+      {
+        label: "Registered Clients",
+        href: "/manage-tax?tab=registered-clients",
+      },
+      { label: "Document Pending", href: "/manage-tax?tab=document-pending" },
+    ],
+  },
   { label: "Manage Preparations", href: "/preparations" },
   { label: "Manage Reviews", href: "/reviews" },
   { label: "Manage Payments", href: "/payments" },
@@ -15,29 +27,56 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname()
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   return (
-    <div className="bg-[#1D2B48] w-55 p-3 pt-6 flex flex-col gap-3 items-start rounded-lg">
+    <div className="bg-[#1D2B48] w-55 p-3 pt-6 flex flex-col gap-3 items-start rounded-lg relative">
       {navItems.map((item) => {
-        const isActive = pathname === item.href
+        const isActive =
+          pathname === item.href ||
+          (item.subItems && item.subItems.some((sub) => sub.href === pathname))
+        const isDropdownOpen = openDropdown === item.label
 
         return (
-          <Link
-            style={{
-              backgroundColor: isActive ? "#ebebeb" : "",
-            }}
+          <div
             key={item.href}
-            href={item.href}
-            className="w-full p-2.5 rounded-md"
+            className="relative w-full"
+            onMouseEnter={() => setOpenDropdown(item.label)}
+            onMouseLeave={() => setOpenDropdown(null)}
           >
-            <h3
-              className={`text-sm font-medium cursor-pointer transition-colors ${
-                isActive ? "text-black" : "text-white hover:text-red-400"
+            <Link
+              // style={{
+              //   backgroundColor: isActive ? "#ebebeb" : "",
+              // }}
+              key={item.href}
+              href={item.href}
+              //className="w-full p-2.5 rounded-md"
+              className={`w-full p-2.5 rounded-md flex justify-between items-center transition-colors ${
+                isActive ? "bg-[#ebebeb]" : "hover:bg-[#2e3c5d]"
               }`}
             >
-              {item.label}
-            </h3>
-          </Link>
+              <h3
+                className={`text-sm font-medium cursor-pointer transition-colors ${
+                  isActive ? "text-black" : "text-white hover:text-red-400"
+                }`}
+              >
+                {item.label}
+              </h3>
+            </Link>
+            {item.subItems && isDropdownOpen && (
+              <div className="absolute top-0 left-full ml-0.5 w-48 bg-[#2e3c5d] rounded-md shadow-lg z-50">
+                {item.subItems.map((sub) => (
+                  <Link
+                    key={sub.label}
+                    href={sub.href}
+                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400"
+                  >
+                    {sub.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         )
       })}
     </div>

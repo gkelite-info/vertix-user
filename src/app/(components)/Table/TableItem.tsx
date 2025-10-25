@@ -4,9 +4,18 @@ import { TableColumn } from "./types"
 type Props<T> = {
   row: T
   columns: TableColumn<T>[]
+  rowIndex?: number
+  currentPage?: number
+  pageSize?: number
 }
 
-function TableItem<T>({ row, columns }: Props<T>) {
+function TableItem<T>({
+  row,
+  columns,
+  rowIndex = 0,
+  currentPage = 1,
+  pageSize = 25,
+}: Props<T>) {
   return (
     <tr className="even:bg-[#E9E9E9]">
       {columns.map((column, index) => (
@@ -22,7 +31,12 @@ function TableItem<T>({ row, columns }: Props<T>) {
               : "whitespace-nowrap"
           }`}
         >
-          {column.render ? column.render(row) : "-"}
+          {/* {column.render ? column.render(row) : "-"} */}
+          {column.name === "S.No"
+            ? (currentPage - 1) * pageSize + rowIndex + 1
+            : column.render
+            ? column.render(row)
+            : "-"}
         </td>
       ))}
     </tr>

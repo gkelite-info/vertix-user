@@ -1,8 +1,18 @@
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
 //get all pre-registered clients
+// export const getAllPreRegisterClients = async () => {
+//   const { data, error } = await supabaseCustomer.from("referrals").select("*")
+//   if (error) throw error
+//   return data
+// }
+
 export const getAllPreRegisterClients = async () => {
-  const { data, error } = await supabaseCustomer.from("referrals").select("*")
+  const { data, error } = await supabaseCustomer
+    .from("referrals")
+    .select("*")
+    .order("updatedAt", { ascending: false }) // 🆕 latest first
+
   if (error) throw error
   return data
 }
@@ -12,7 +22,7 @@ export const updateStatus = async (rowId: number, status: string) => {
   const { data, error } = await supabaseCustomer
     .from("referrals")
     .update({ status })
-    .eq("customerId", rowId)
+    .eq("referId", rowId)
 
   if (error) throw error
   return data
@@ -23,7 +33,7 @@ export const updateFollowup = async (rowId: number, followup: string) => {
   const { data, error } = await supabaseCustomer
     .from("referrals")
     .update({ followup })
-    .eq("customerId", rowId)
+    .eq("referId", rowId)
 
   if (error) throw error
   return data
@@ -40,7 +50,7 @@ export const saveComment = async (
   const { data, error } = await supabaseCustomer
     .from("referrals")
     .update({ comments: updatedComment })
-    .eq("customerId", rowId)
+    .eq("referId", rowId)
 
   if (error) throw error
   return data
