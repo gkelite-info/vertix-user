@@ -1,55 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { supabaseAdmin } from "@/api-requests/supabaseAdmin"
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
-
-// export const getAllRegisteredClients = async (
-//   role?: string,
-//   userName?: string,
-//   tab?: string
-// ) => {
-//   try {
-//     let query = supabaseCustomer.from("filing_year").select(`
-//         *,
-//         customer:customerId (
-//           firstname,
-//           lastname,
-//           timezone
-//         )
-//       `)
-
-//     // If the user is admin, fetch only assigned clients
-//     if (role === "admin" && userName) {
-//       query = query.eq("assigned", userName)
-//     }
-
-//     // 🆕 CHANGE: Add conditional filter based on tab value
-//     if (tab === "document-pending") {
-//       // Only Tax Org Pending
-//       query = query.eq("status", "Tax Org Pending")
-//     } else if (tab === "registered-clients" || "undefined") {
-//       // Exclude Tax Org Pending
-//       //query = query.neq("status", "Tax Org Pending")
-//       query = query.or("status.is.null,status.neq.Tax Org Pending")
-//     }
-
-//     const { data, error } = await query.order("updatedAt", { ascending: false })
-
-//     if (error) throw new Error(error.message)
-//     const formattedData = (data || []).map((row: any) => ({
-//       ...row,
-//       firstname: row.customer?.firstname || "",
-//       lastname: row.customer?.lastname || "",
-//       timezone: row.customer?.timezone || "",
-//     }))
-
-//     return formattedData
-//   } catch (err: any) {
-//     console.error("Supabase fetch error:", err.message)
-//     return []
-//   }
-// }
-
-// 🆕 Update status
 
 export const getAllRegisteredClients = async (
   role?: string,
@@ -104,6 +54,7 @@ export const getAllRegisteredClients = async (
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
+          email : row.customer?.email ?? "",
         })) ?? [],
       totalCount: count ?? 0,
     }
@@ -162,17 +113,25 @@ export const saveComment = async (
   return data
 }
 
-// export const generateCustomerLoginLink = async (email: string) => {
-//   try {
-//     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-//       type: "magiclink",
-//       email,
-//     })
+// Update the generateCustomerLoginLink function:
+export const generateCustomerLoginLink = async (email: string) => {
+  try {
+    // Call API route instead of direct admin call
+    const response = await fetch('/api/generate-magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
 
-//     if (error) throw error
-//     return data?.properties?.action_link
-//   } catch (err: any) {
-//     console.error("Error generating magic link:", err.message)
-//     throw new Error("Failed to create temporary login link")
-//   }
-// }
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to generate link')
+    }
+
+    const { magicLink } = await response.json()
+    return magicLink
+  } catch (err: any) {
+    console.error("Error generating magic link:", err.message)
+    throw new Error("Failed to create temporary login link")
+  }
+}
