@@ -30,11 +30,15 @@ export const getAllRegisteredClients = async (
       query = query.eq("assigned", assignedFilter)
     }
 
-    // Tab filter
     if (tab === "document-pending") {
-      query = query.eq("status", "Tax Org Pending")
+      query = query.eq("status", "Documents Pending")
     } else if (tab === "registered-clients" || tab === undefined) {
-      query = query.or("status.is.null,status.neq.Tax Org Pending")
+      //query = query.or("status.is.null,status.eq.Documents Pending")
+      query = query.in("status", [
+        "Tax Org Pending",
+        "Not Interested",
+        "Already Filed",
+      ])
     }
 
     // 🧩 Pagination (server-side)
@@ -54,7 +58,7 @@ export const getAllRegisteredClients = async (
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
-          email : row.customer?.email ?? "",
+          email: row.customer?.email ?? "",
         })) ?? [],
       totalCount: count ?? 0,
     }
@@ -117,15 +121,15 @@ export const saveComment = async (
 export const generateCustomerLoginLink = async (email: string) => {
   try {
     // Call API route instead of direct admin call
-    const response = await fetch('/api/generate-magic-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+    const response = await fetch("/api/generate-magic-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
     })
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.message || 'Failed to generate link')
+      throw new Error(error.message || "Failed to generate link")
     }
 
     const { magicLink } = await response.json()

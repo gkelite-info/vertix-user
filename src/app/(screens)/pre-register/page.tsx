@@ -48,13 +48,15 @@ const PreRegisterClient = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [followupUsers, setFollowupUsers] = useState<string[]>([])
   const [isLoadingPreClients, setIsLoadingPreClients] = useState<boolean>(true)
+  const [totalCount, setTotalCount] = useState(0)
 
   // 🔵 Helper: single reusable fetch method for clients
-  const fetchClients = async () => {
+  const fetchClients = async (page = 1) => {
     try {
       setIsLoadingPreClients(true)
-      const res = await getAllPreRegisterClients()
-      setData(res)
+      const res = await getAllPreRegisterClients(page, PAGE_SIZE)
+      setData(res.data)
+      setTotalCount(res.totalCount)
     } catch (error: any) {
       toast.error(error?.message || "Failed to fetch pre-register clients")
     } finally {
@@ -73,9 +75,9 @@ const PreRegisterClient = () => {
       }
     }
 
-    fetchClients()
+    fetchClients(currentPage)
     getFollowupUsers()
-  }, [])
+  }, [currentPage])
 
   // 🔵 UPDATED: after status update, re-fetch fresh API data instead of manual state change
   const handleStatusChange = async (
@@ -85,7 +87,7 @@ const PreRegisterClient = () => {
     try {
       await updateStatus(row.referId, value)
       toast.success("Status updated successfully")
-      await fetchClients() // 🔵 refresh after update
+      await fetchClients(currentPage) // 🔵 refresh after update
     } catch (err: any) {
       toast.error(err?.message || "Failed to update status. Please try again")
     }
@@ -99,7 +101,7 @@ const PreRegisterClient = () => {
     try {
       await updateFollowup(row.referId, value)
       toast.success("Followup updated successfully")
-      await fetchClients() // 🔵 refresh after update
+      await fetchClients(currentPage) // 🔵 refresh after update
     } catch (err: any) {
       toast.error(err?.message || "Failed to update followup. Please try again")
     }
@@ -118,7 +120,7 @@ const PreRegisterClient = () => {
       await saveComment(currentCommentRow.referId, comment, updatedBy)
       toast.success("Comment updated successfully")
       setModalOpen(false)
-      await fetchClients() // 🔵 refresh data
+      await fetchClients(currentPage) // 🔵 refresh data
     } catch (err: any) {
       toast.error(err?.message || "Failed to update comment. Please try again")
     }
@@ -205,10 +207,10 @@ const PreRegisterClient = () => {
     <div className="w-full p-4 bg-[#EBEBEB] h-[100%] flex flex-col justify-between">
       <Table columns={columns} data={data} isLoading={isLoadingPreClients} />
 
-      {data.length > 0 && (
+      {totalCount > 0 && (
         <div className="mt-4">
           <Pagination
-            totalItems={data.length}
+            totalItems={totalCount}
             currentPage={currentPage}
             pageSize={PAGE_SIZE}
             onPageChange={(page) => setCurrentPage(page)}

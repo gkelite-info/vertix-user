@@ -1,20 +1,20 @@
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
-//get all pre-registered clients
-// export const getAllPreRegisterClients = async () => {
-//   const { data, error } = await supabaseCustomer.from("referrals").select("*")
-//   if (error) throw error
-//   return data
-// }
+export const getAllPreRegisterClients = async (
+  page: number = 1,
+  pageSize: number = 25
+) => {
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
 
-export const getAllPreRegisterClients = async () => {
-  const { data, error } = await supabaseCustomer
+  const { data, error, count } = await supabaseCustomer
     .from("referrals")
-    .select("*")
-    .order("updatedAt", { ascending: false }) // 🆕 latest first
+    .select("*", { count: "exact" })
+    .order("updatedAt", { ascending: false })
+    .range(from, to)
 
   if (error) throw error
-  return data
+  return { data, totalCount: count ?? 0 }
 }
 
 // Update status for a row
