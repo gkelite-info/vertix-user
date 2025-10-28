@@ -17,9 +17,10 @@ export async function POST(request: NextRequest) {
       type: "magiclink",
       email,
       options: {
-        redirectTo:
+        redirectTo: `${
           process.env.NEXT_PUBLIC_REDIRECT_URL ||
-          `https://www.vertixtax.com/taxfiling`,
+          "https://www.vertixtax.com/taxfiling"
+        }?temporary_access=true`,
       },
     })
 
