@@ -1,13 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { useState } from "react"
 
 const navItems = [
   { label: "View Clients", href: "/dashboard" },
   { label: "Pre-Register Clients", href: "/pre-register" },
-  { label: "Manage Clients", href: "/manage-client" },
   //{ label: "Manage Tax Organizer", href: "/manage-tax" },
   {
     label: "Manage Tax Organizer",
@@ -17,24 +16,40 @@ const navItems = [
         label: "Registered Clients",
         href: "/manage-tax?tab=registered-clients",
       },
-      { label: "Document Pending", href: "/manage-tax?tab=document-pending" },
+      { label: "Documents Pending", href: "/manage-tax?tab=documents-pending" },
     ],
   },
   { label: "Manage Preparations", href: "/preparations" },
   { label: "Manage Reviews", href: "/reviews" },
   { label: "Manage Payments", href: "/payments" },
+  { label: "Revert Clients", href: "/revert-client" },
 ]
 
 export default function Navbar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+
+  const isManageTaxActive = () => {
+    const tab = searchParams.get("tab")
+    return (
+      pathname === "/manage-tax" ||
+      tab === "registered-clients" ||
+      tab === "documents-pending"
+    )
+  }
 
   return (
     <div className="bg-[#1D2B48] w-55 p-3 pt-6 flex flex-col gap-3 items-start rounded-lg relative">
       {navItems.map((item) => {
         const isActive =
-          pathname === item.href ||
-          (item.subItems && item.subItems.some((sub) => sub.href === pathname))
+          item.label === "Manage Tax Organizer"
+            ? isManageTaxActive()
+            : pathname === item.href ||
+              (item.subItems &&
+                item.subItems.some((sub) =>
+                  pathname.startsWith(sub.href.split("?")[0])
+                ))
         const isDropdownOpen = openDropdown === item.label
 
         return (

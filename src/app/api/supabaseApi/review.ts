@@ -20,11 +20,10 @@ export const getAllRegisteredClientsReviews = async (
       `,
       { count: "exact" }
     )
-    query = query.in("status", [
-      "Review Pending",
-      //   "Review Rework Needed",
-      "Discussion Pending",
-    ])
+    query = query.eq("status", "Review Pending")
+    query = query.or(
+      'sub_status.is.null,and(sub_status.neq."Not Interested",sub_status.neq."Already Filed")'
+    )
     // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)

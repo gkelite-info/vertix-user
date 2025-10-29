@@ -10,16 +10,14 @@ import Pagination from "@/app/(components)/Table/pagination"
 import toast from "react-hot-toast"
 import { getUser } from "@/app/api/supabaseApi/userApi"
 import {
-  getAllRegisteredClients,
   saveComment,
   updateAssignedUser,
   updateStatus,
   updateSubStatus,
 } from "@/app/api/supabaseApi/tax-organizer"
 import { getFollowupUsersData } from "@/app/api/supabaseApi/pre-register"
-import { useSearchParams } from "next/navigation"
 import { FaFilter } from "react-icons/fa"
-import ConfirmModal from "@/utils/confirmModel"
+import { getAllManageClients } from "@/app/api/supabaseApi/manage-client"
 
 type ManageTaxType = {
   filingYearId: number
@@ -34,13 +32,7 @@ type ManageTaxType = {
   updatedAt: string
 }
 
-// 👇 Put this near top of the file (after imports)
-const getStatusOptions = (tab?: string) => {
-  if (tab === "documents-pending") {
-    return ["Documents Pending", "Not Interested", "Already Filed"]
-  }
-  return ["Tax Org Pending", "Not Interested", "Already Filed"]
-}
+const statusOptions = ["Select Status", "Not Interested", "Already Filed"]
 
 const subStatusOptions = [
   "Select Sub-Status",
@@ -53,7 +45,7 @@ const subStatusOptions = [
 
 const PAGE_SIZE = 25
 
-const ManageTax = () => {
+const ManageClient = () => {
   const [data, setData] = useState<ManageTaxType[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [currentCommentRow, setCurrentCommentRow] =
@@ -69,17 +61,6 @@ const ManageTax = () => {
   const [assignedFilter, setAssignedFilter] = useState<string>("")
   const [showAssignedDropdown, setShowAssignedDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
-
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab")
-  const tab = tabParam ?? undefined
-
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
-  const [pendingAction, setPendingAction] = useState<{
-    type: "status" | "subStatus"
-    row: ManageTaxType
-    value: string
-  } | null>(null)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -101,10 +82,9 @@ const ManageTax = () => {
 
       try {
         if (showLoader) setIsClientsDataLoading(true)
-        const { data, totalCount } = await getAllRegisteredClients(
+        const { data, totalCount } = await getAllManageClients(
           userRole,
           userName,
-          tab || undefined,
           currentPage,
           PAGE_SIZE,
           assignedFilter
@@ -118,7 +98,7 @@ const ManageTax = () => {
         if (showLoader) setIsClientsDataLoading(false)
       }
     },
-    [userRole, userName, tab, currentPage, assignedFilter]
+    [userRole, userName, currentPage, assignedFilter]
   )
 
   // 🆕 CHANGE: trigger fetchClients when deps are ready/changed
@@ -126,7 +106,7 @@ const ManageTax = () => {
     // wait until userRole is available (set by getUser effect)
     if (!userRole) return
     fetchClients(true)
-  }, [fetchClients, userRole, userName, tab, currentPage])
+  }, [fetchClients, userRole, userName, currentPage])
 
   // Fetch assigned users once
   useEffect(() => {
@@ -155,14 +135,10 @@ const ManageTax = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // 🆕 CHANGE: On update APIs, call server then refresh list via fetchClients()
   const handleStatusChange = async (row: ManageTaxType, value: string) => {
-    if (["Not Interested", "Already Filed"].includes(value)) {
-      setPendingAction({ type: "status", row, value })
-      setConfirmModalOpen(true)
-      return
-    }
     try {
-      setIsClientsDataLoading(true)
+      setIsClientsDataLoading(true) // show loader while updating + refetching
       await updateStatus(row.filingYearId, value)
       // Re-fetch from API to ensure filters are applied (e.g. Tax Org Pending removed from current tab)
       await fetchClients(false) // false => we already set loader manually
@@ -175,11 +151,6 @@ const ManageTax = () => {
   }
 
   const handleSubStatusChange = async (row: ManageTaxType, value: string) => {
-    if (["Not Interested", "Already Filed"].includes(value)) {
-      setPendingAction({ type: "subStatus", row, value })
-      setConfirmModalOpen(true)
-      return
-    }
     try {
       setIsClientsDataLoading(true)
       await updateSubStatus(row.filingYearId, value)
@@ -188,29 +159,6 @@ const ManageTax = () => {
     } catch (err: any) {
       toast.error(err?.message || "Failed to update sub-status")
     } finally {
-      setIsClientsDataLoading(false)
-    }
-  }
-
-  const handleConfirmAction = async () => {
-    if (!pendingAction) return
-    const { type, row, value } = pendingAction
-
-    try {
-      setIsClientsDataLoading(true)
-      if (type === "status") {
-        await updateStatus(row.filingYearId, value)
-        toast.success("Status updated successfully")
-      } else {
-        await updateSubStatus(row.filingYearId, value)
-        toast.success("Sub-Status updated successfully")
-      }
-      await fetchClients(false)
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update")
-    } finally {
-      setPendingAction(null)
-      setConfirmModalOpen(false)
       setIsClientsDataLoading(false)
     }
   }
@@ -260,7 +208,7 @@ const ManageTax = () => {
           onChange={(e) => handleStatusChange(row, e.target.value)}
           className="border px-2 py-1 rounded cursor-pointer"
         >
-          {getStatusOptions(tab ?? undefined).map((status) => (
+          {statusOptions.map((status) => (
             <option key={status} value={status}>
               {status}
             </option>
@@ -269,6 +217,7 @@ const ManageTax = () => {
       ),
     },
     {
+      // 🆕 CHANGE: Auto-login to customer portal via Supabase magic link
       name: "Action",
       render: (row) => (
         <button
@@ -276,6 +225,7 @@ const ManageTax = () => {
             try {
               toast.loading("Generating secure login link...", { id: "taxorg" })
 
+              // 🆕 Fetch the customer's email from your data (already joined in query)
               const customerEmail =
                 (row as any)?.customer?.email || (row as any)?.email
               if (!customerEmail) {
@@ -283,6 +233,7 @@ const ManageTax = () => {
                 return
               }
 
+              // 🆕 Dynamically import helper to avoid bundling service key
               const { generateCustomerLoginLink } = await import(
                 "@/app/api/supabaseApi/tax-organizer"
               )
@@ -303,7 +254,7 @@ const ManageTax = () => {
           }}
           className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
         >
-          Tax Organizer
+          Fee & Tax Summary
         </button>
       ),
     },
@@ -463,18 +414,8 @@ const ManageTax = () => {
         onClose={() => setModalOpen(false)}
         onSave={handleCommentSave}
       />
-
-      <ConfirmModal
-        isOpen={confirmModalOpen}
-        message="This action cannot be undone. Are you sure you want to continue?"
-        onClose={() => {
-          setConfirmModalOpen(false)
-          setPendingAction(null)
-        }}
-        onConfirm={handleConfirmAction}
-      />
     </div>
   )
 }
 
-export default ManageTax
+export default ManageClient
