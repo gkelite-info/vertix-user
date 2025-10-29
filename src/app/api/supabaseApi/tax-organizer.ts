@@ -30,15 +30,18 @@ export const getAllRegisteredClients = async (
       query = query.eq("assigned", assignedFilter)
     }
 
-    if (tab === "document-pending") {
-      query = query.eq("status", "Documents Pending")
+    if (tab === "documents-pending") {
+      query = query
+        .eq("status", "Documents Pending")
+        .or(
+          'sub_status.is.null,and(sub_status.neq."Not Interested",sub_status.neq."Already Filed")'
+        )
     } else if (tab === "registered-clients" || tab === undefined) {
-      //query = query.or("status.is.null,status.eq.Documents Pending")
-      query = query.in("status", [
-        "Tax Org Pending",
-        "Not Interested",
-        "Already Filed",
-      ])
+      query = query
+        .eq("status", "Tax Org Pending")
+        .or(
+          'sub_status.is.null,and(sub_status.neq."Not Interested",sub_status.neq."Already Filed")'
+        )
     }
 
     // 🧩 Pagination (server-side)
@@ -138,4 +141,15 @@ export const generateCustomerLoginLink = async (email: string) => {
     console.error("Error generating magic link:", err.message)
     throw new Error("Failed to create temporary login link")
   }
+}
+
+// 🆕 Update last actor
+export const updateLastActor = async (rowId: number, last_actor: string) => {
+  const { data, error } = await supabaseCustomer
+    .from("filing_year")
+    .update({ last_actor })
+    .eq("filingYearId", rowId)
+
+  if (error) throw error
+  return data
 }

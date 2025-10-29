@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
 
-export const getAllRegisteredClientsPreparations = async (
+export const getAllManageClients = async (
   role?: string,
   userName?: string,
   page: number = 1,
@@ -20,9 +20,8 @@ export const getAllRegisteredClientsPreparations = async (
       `,
       { count: "exact" }
     )
-    query = query.eq("status", "Preparation Pending")
     query = query.or(
-      'sub_status.is.null,and(sub_status.neq."Not Interested",sub_status.neq."Already Filed")'
+      'status.in.("Not Interested","Already Filed"),sub_status.in.("Not Interested","Already Filed")'
     )
     // Filter by assigned admin
     if (role === "admin" && userName) {

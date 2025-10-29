@@ -18,6 +18,7 @@ import {
 import { getFollowupUsersData } from "@/app/api/supabaseApi/pre-register"
 import { FaFilter } from "react-icons/fa"
 import { getAllRegisteredClientsPreparations } from "@/app/api/supabaseApi/preparation"
+import ConfirmModal from "@/utils/confirmModel"
 
 type ManageTaxType = {
   filingYearId: number
@@ -32,16 +33,21 @@ type ManageTaxType = {
   updatedAt: string
 }
 
-const statusOptions = ["Preparation Pending", "Rework Needed", "Review Pending"]
+const statusOptions = ["Preparation Pending", "Review Pending"]
 
 const subStatusOptions = [
   "Select Sub-Status",
   "Voicemail",
-  "Additional Documents Pending",
   "Call Later",
   "Not Interested",
   "DND",
   "Already Filed",
+]
+
+const lastActorOptions = [
+  "Select Last_Actor",
+  "Additional Documents Pending",
+  "Rework Needed",
 ]
 
 const PAGE_SIZE = 25
@@ -62,6 +68,13 @@ const Preparations = () => {
   const [assignedFilter, setAssignedFilter] = useState<string>("")
   const [showAssignedDropdown, setShowAssignedDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [pendingAction, setPendingAction] = useState<{
+    type: "sub_status"
+    row: ManageTaxType
+    value: string
+  } | null>(null)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -152,6 +165,11 @@ const Preparations = () => {
   }
 
   const handleSubStatusChange = async (row: ManageTaxType, value: string) => {
+    if (["Not Interested", "Already Filed"].includes(value)) {
+      setPendingAction({ type: "sub_status", row, value })
+      setConfirmModalOpen(true)
+      return
+    }
     try {
       setIsClientsDataLoading(true)
       await updateSubStatus(row.filingYearId, value)
@@ -160,6 +178,23 @@ const Preparations = () => {
     } catch (err: any) {
       toast.error(err?.message || "Failed to update sub-status")
     } finally {
+      setIsClientsDataLoading(false)
+    }
+  }
+
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return
+    const { row, value } = pendingAction
+    try {
+      setIsClientsDataLoading(true)
+      await updateSubStatus(row.filingYearId, value)
+      await fetchClients(false)
+      toast.success("Sub-Status updated successfully")
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update sub-status")
+    } finally {
+      setConfirmModalOpen(false)
+      setPendingAction(null)
       setIsClientsDataLoading(false)
     }
   }
@@ -414,6 +449,16 @@ const Preparations = () => {
         initialComment={currentCommentRow?.comments || ""}
         onClose={() => setModalOpen(false)}
         onSave={handleCommentSave}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        message="This action cannot be undone. Are you sure you want to continue?"
+        onClose={() => {
+          setConfirmModalOpen(false)
+          setPendingAction(null)
+        }}
+        onConfirm={handleConfirmAction}
       />
     </div>
   )
