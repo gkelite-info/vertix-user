@@ -7,7 +7,8 @@ const Preparations = () => {
   const { colums } = usePreparationTableData()
   const { data } = usePreparation()
   return (
-    <div className="w-full p-4">
+    <div className="w-full p-2">
+      <h1 className="text-[#1D2B48] font-medium text-lg mb-3">Manage Payments</h1>
       <Table columns={colums} data={data} />
     </div>
   )

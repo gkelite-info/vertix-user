@@ -6,7 +6,7 @@ import { useState } from "react"
 
 const navItems = [
   { label: "View Clients", href: "/dashboard" },
-  { label: "Pre-Register Clients", href: "/pre-register" },
+  { label: "Pre-Registered Clients", href: "/pre-register" },
   //{ label: "Manage Tax Organizer", href: "/manage-tax" },
   {
     label: "Manage Tax Organizer",
@@ -84,7 +84,7 @@ export default function Navbar() {
                   <Link
                     key={sub.label}
                     href={sub.href}
-                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400"
+                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400 rounded-md"
                   >
                     {sub.label}
                   </Link>

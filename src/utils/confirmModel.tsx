@@ -33,7 +33,7 @@ const ConfirmModal = ({ isOpen, message, onClose, onConfirm }: Props) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* 🔸 Updated heading */}
-        <h2 className="text-lg font-semibold mb-4 text-center">
+        <h2 className="text-lg font-semibold mb-4 text-center text-[#1D2B48]">
           Are you sure you want to do this?
         </h2>
 
@@ -42,7 +42,7 @@ const ConfirmModal = ({ isOpen, message, onClose, onConfirm }: Props) => {
 
         <div className="flex justify-center gap-4">
           <button
-            className="px-4 py-2 bg-gray-300 rounded cursor-pointer"
+            className="px-4 py-2 bg-gray-300 rounded cursor-pointer text-[#1D2B48]"
             onClick={onClose}
           >
             Cancel

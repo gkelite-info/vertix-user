@@ -14,7 +14,7 @@ function Table<T>({
     <div className="w-full overflow-x-auto bg-red-00 h-full">
       <table className="min-w-full border-collapse overflow-y-auto">
         <TableHeader columns={columns} />
-        <tbody>
+        <tbody className="text-[#1D2B48]">
           {isLoading ? (
             <tr>
               <td
