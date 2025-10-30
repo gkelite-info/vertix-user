@@ -9,7 +9,8 @@ function Table<T>({
   isLoading,
   currentPage = 1,
   pageSize = 25,
-}: TableProps<T>) {
+  title
+}: TableProps<T> & { title?: string }) {
   return (
     <div className="w-full overflow-x-auto bg-red-00 h-full">
       <table className="min-w-full border-collapse overflow-y-auto">
