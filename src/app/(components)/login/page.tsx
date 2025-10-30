@@ -137,6 +137,11 @@ function Page() {
                     onChange={handlePasswordChange}
                     placeholder="Enter your password"
                     className="lg:h-[100%] lg:w-[100%] text-black font-medium lg:p-2 lg:ml-2 border-none focus:outline-none focus:ring-0"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleLogin();
+                      }
+                    }}
                   />
                   <Icon
                     icon={showPassword ? "ri:eye-line" : "ri:eye-close-line"}
