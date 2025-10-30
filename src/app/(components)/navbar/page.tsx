@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
 const navItems = [
   { label: "View Clients", href: "/dashboard" },
@@ -25,7 +25,7 @@ const navItems = [
   { label: "Revert Clients", href: "/revert-client" },
 ]
 
-export default function Navbar() {
+function NavbarContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
@@ -95,5 +95,14 @@ export default function Navbar() {
         )
       })}
     </div>
+  )
+}
+
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={<div className="text-white p-3">Loading Navbar...</div>}>
+      <NavbarContent />
+    </Suspense>
   )
 }
