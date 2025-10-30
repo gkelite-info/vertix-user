@@ -29,7 +29,7 @@ const CommentModal = ({ isOpen, initialComment, onClose, onSave }: Props) => {
       style={{
         backgroundColor: "rgba(0, 0, 0, 0.5)",
       }}
-      className="fixed inset-0 flex items-center justify-center z-50"
+      className="fixed inset-0 flex items-center justify-center z-50 text-[#1D2B48]"
       onClick={handleOutsideClick} // Close on outside click
     >
       <div

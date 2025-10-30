@@ -8,7 +8,7 @@ type Props<T> = {
 function TableHeader<T>({ columns }: Props<T>) {
   return (
     <thead>
-      <tr className="bg-[#4B5873] text-white font-normal">
+      <tr className="bg-[#4B5873] text-white">
         {columns.map((column, index) => (
           <th
             key={index}
@@ -16,7 +16,7 @@ function TableHeader<T>({ columns }: Props<T>) {
               width: column.width || "auto",
               minWidth: column.width || "auto",
             }}
-            className="px-3 py-3 text-left border border-gray-300 whitespace-nowrap"
+            className="px-3 py-3 text-center border border-gray-300 whitespace-nowrap"
           >
             {column.name}
           </th>

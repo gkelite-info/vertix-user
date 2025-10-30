@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
 const navItems = [
   { label: "View Clients", href: "/dashboard" },
-  { label: "Pre-Register Clients", href: "/pre-register" },
+  { label: "Pre-Registered Clients", href: "/pre-register" },
   //{ label: "Manage Tax Organizer", href: "/manage-tax" },
   {
     label: "Manage Tax Organizer",
@@ -25,7 +25,7 @@ const navItems = [
   { label: "Revert Clients", href: "/revert-client" },
 ]
 
-export default function Navbar() {
+function NavbarContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
@@ -84,7 +84,7 @@ export default function Navbar() {
                   <Link
                     key={sub.label}
                     href={sub.href}
-                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400"
+                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400 rounded-md"
                   >
                     {sub.label}
                   </Link>
@@ -95,5 +95,14 @@ export default function Navbar() {
         )
       })}
     </div>
+  )
+}
+
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={<div className="text-white p-3">Loading Navbar...</div>}>
+      <NavbarContent />
+    </Suspense>
   )
 }
