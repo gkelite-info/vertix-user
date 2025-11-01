@@ -47,14 +47,17 @@ if (typeof window !== "undefined") {
       const auth: any = (supabaseCustomer as any).auth
       await new Promise((r) => setTimeout(r, 50))
 
-      // Disable BroadcastChannel sync completely
-      if (auth._bc) auth._bc.close()
-      auth._bc = {
-        postMessage: () => {},
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        close: () => {},
+      const patchCustomerBC = () => {
+        if (auth._bc) auth._bc.close?.()
+        auth._bc = {
+          postMessage: () => {},
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          close: () => {},
+        }
       }
+      patchCustomerBC()
+      auth.onAuthStateChange?.(() => patchCustomerBC()) // CHANGE
 
       console.log("✅ Customer impersonation client fully isolated.")
     } catch (e) {
