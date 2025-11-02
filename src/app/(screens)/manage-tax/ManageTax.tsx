@@ -24,6 +24,7 @@ import ConfirmModal from "@/utils/confirmModel"
 
 type ManageTaxType = {
   filingYearId: number
+  customerId : number
   firstname: string
   lastname: string
   timezone: string
@@ -274,7 +275,7 @@ const ManageTax = () => {
     { name: "First Name", render: (row) => row.firstname },
     { name: "Last Name", render: (row) => row.lastname },
     { name: "Time Zone", render: (row) => row.timezone },
-    { name: "Client Id", render: (row) => row.filingYearId },
+    { name: "Client Id", render: (row) => row.customerId },
     {
       name: "Status",
       render: (row) => (
@@ -286,6 +287,23 @@ const ManageTax = () => {
           {getStatusOptions(tab ?? undefined).map((status) => (
             <option key={status} value={status}>
               {status}
+            </option>
+          ))}
+        </select>
+      ),
+    },
+    {
+      name: "Last Actor",
+      render: (row) => (
+        <select
+          value={row.last_actor || "Select Last Actor"}
+          onChange={(e) => handleLastActorChange(row, e.target.value)}
+          className="border px-2 py-1 rounded cursor-pointer"
+        >
+          <option value="">Select Last Actor</option>
+          {lastActorOptions.map((actor) => (
+            <option key={actor} value={actor}>
+              {actor}
             </option>
           ))}
         </select>
@@ -347,23 +365,7 @@ const ManageTax = () => {
         </select>
       ),
     },
-    {
-      name: "Last Actor",
-      render: (row) => (
-        <select
-          value={row.last_actor || "Select Last Actor"}
-          onChange={(e) => handleLastActorChange(row, e.target.value)}
-          className="border px-2 py-1 rounded cursor-pointer"
-        >
-          <option value="">Select Last Actor</option>
-          {lastActorOptions.map((actor) => (
-            <option key={actor} value={actor}>
-              {actor}
-            </option>
-          ))}
-        </select>
-      ),
-    },
+    
 
     {
       name: "Comments",

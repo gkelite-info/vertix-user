@@ -1,71 +1,73 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
-export const getAllCustomers = async (search?: string) => {
+export const getAllCustomers = async (
+  search?: string,
+  page: number = 1,
+  pageSize: number = 25
+) => {
   try {
-    // Base query
-    const query = supabaseCustomer.from("vertixcustomers").select("*")
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
 
-    // No search term → fetch all
+    const baseQuery = supabaseCustomer
+      .from("vertixcustomers")
+      .select("*", { count: "exact" })
+      .order("updatedAt", { ascending: false }) // newest records first
+
     if (!search || !search.trim()) {
-      const { data, error } = await query
+      const { data, error, count } = await baseQuery.range(from, to)
       if (error) throw new Error(error.message)
-      return data || []
+      return { data: data || [], count: count || 0 }
     }
 
     const searchTerm = search.trim().toLowerCase()
     const parts = searchTerm.split(" ").filter(Boolean)
-    const [first, last] = parts
 
-    // 🔹 CASE 1: Combined first + last name search (e.g. "shiva n" or "ramu g")
+    // MARKED CHANGE: Return no results if more than two words typed
+    if (parts.length > 2) {
+      return { data: [], count: 0 }
+    }
+
+    const first = parts[0] || ""
+    const last = parts[1] || ""
+
     if (first && last) {
-      // Fetch possible first name matches
-      const { data, error } = await supabaseCustomer
+      // Combined first + last name search with pagination on first name
+      const { data, error, count } = await supabaseCustomer
         .from("vertixcustomers")
-        .select("*")
+        .select("*", { count: "exact" })
         .ilike("firstname", `%${first}%`)
+        .range(from, to)
+        .order("updatedAt", { ascending: false })
 
       if (error) throw new Error(error.message)
 
-      // Filter locally for exact combined matches
-      const filtered =
-        data?.filter(
-          (row) =>
-            row.firstname?.toLowerCase().includes(first) &&
-            row.lastname?.toLowerCase().includes(last)
-        ) || []
+      // Local filter for combined first and last name match
+      const filtered = data?.filter(
+        (row) =>
+          row.firstname?.toLowerCase().includes(first) &&
+          row.lastname?.toLowerCase().includes(last)
+      ) || []
 
-      return filtered
+      return { data: filtered, count: filtered.length }
     }
 
-    // 🔹 CASE 2: Single search term — match by first/last/email/phone
-    // const { data, error } = await query.or(
-    //   `customerId.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
-    // )
-    let data: any[] = []
-    let error: any = null
+    // Single word search term (or only one word provided)
+    const term = first
 
-    if (!isNaN(Number(searchTerm))) {
-      // 🟩 Numeric input → search by customerId or phone
-      const res = await query.or(
-        `customerId.eq.${Number(searchTerm)},phone.ilike.%${searchTerm}%`
+    const { data, error, count } = await baseQuery
+      .or(
+        `firstname.ilike.%${term}%,lastname.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`
       )
-      data = res.data || []
-      error = res.error
-    } else {
-      // 🟩 Text input → search by name, email, phone
-      const res = await query.or(
-        `firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
-      )
-      data = res.data || []
-      error = res.error
-    }
+      .range(from, to)
 
     if (error) throw new Error(error.message)
-    return data || []
+
+    return { data: data || [], count: count || 0 }
   } catch (err: any) {
     console.error("Supabase fetch error:", err.message)
-    return []
+    return { data: [], count: 0 }
   }
 }
 
