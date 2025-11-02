@@ -21,6 +21,7 @@ import { getAllManageClients } from "@/app/api/supabaseApi/manage-client"
 
 type ManageTaxType = {
   filingYearId: number
+  customerId: number
   firstname: string
   lastname: string
   timezone: string
@@ -199,7 +200,7 @@ const ManageClient = () => {
     { name: "First Name", render: (row) => row.firstname },
     { name: "Last Name", render: (row) => row.lastname },
     { name: "Time Zone", render: (row) => row.timezone },
-    { name: "Client Id", render: (row) => row.filingYearId },
+    { name: "Client Id", render: (row) => row.customerId },
     {
       name: "Status",
       render: (row) => (

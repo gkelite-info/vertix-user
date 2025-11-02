@@ -27,8 +27,10 @@ export default function Dashboard() {
   const [search, setSearch] = useState("")
   const [data, setData] = useState<Customer[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const isFirstRender = useRef<boolean>(true)
+  const [debouncedSearch, setDebouncedSearch] = useState("")
 
   const columns: TableColumn<Customer>[] = [
     { name: "ClientId", render: (row) => row.customerId },
@@ -44,6 +46,14 @@ export default function Dashboard() {
     { name: "Occupation", render: (row) => row.occupation },
     { name: "Country", render: (row) => row.country },
   ]
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search)
+      setCurrentPage(1) // reset page when debounced search changes
+    }, 500) // 500ms debounce delay
+
+    return () => clearTimeout(handler) // cleanup on search change
+  }, [search])
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -52,27 +62,27 @@ export default function Dashboard() {
     const fetchUsers = async () => {
       try {
         setIsLoading(true)
-        const data = await getAllCustomers(search)
-        setData(data)
+        const res = await getAllCustomers(debouncedSearch, currentPage, PAGE_SIZE)
+        setData(res.data)
+        setTotalCount(res.count)
       } catch (error: any) {
         toast.error(error.message || "Failed to fetch clients")
       } finally {
         setIsLoading(false)
       }
     }
-    if (search.trim().length > 0) {
+    if (debouncedSearch.trim().length > 0) {
       fetchUsers()
+    } else {
+      // If search cleared, optionally clear data
+      setData([])
+      setTotalCount(0)
     }
-  }, [search])
-
-  const paginatedData = data.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  )
+  }, [debouncedSearch, currentPage])
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
-    setCurrentPage(1)
+    //setCurrentPage(1)
   }
 
   return (
@@ -95,16 +105,16 @@ export default function Dashboard() {
             <div className="flex-grow overflow-auto scrollbar-hide">
               <Table
                 columns={columns}
-                data={paginatedData}
+                data={data}
                 isLoading={isLoading}
               />
             </div>
             <div className="mt-auto py-2">
-              {data.length > 0 && (
+              {totalCount > 0 && (
                 <Pagination
-                  totalItems={data.length} // total data from API
+                  totalItems={totalCount} // total data from API
                   currentPage={currentPage}
-                  pageSize={25} // items per page
+                  pageSize={PAGE_SIZE} // items per page
                   onPageChange={(page) => setCurrentPage(page)}
                 />
               )}
