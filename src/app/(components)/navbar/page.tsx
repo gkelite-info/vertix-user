@@ -22,6 +22,20 @@ const navItems = [
   { label: "Manage Preparations", href: "/preparations" },
   { label: "Manage Reviews", href: "/reviews" },
   { label: "Manage Payments", href: "/payments" },
+  {
+    label: "Manage Post Payments",
+    href: "#",
+    subItems: [
+      {
+        label: "Documents Upload Pending",
+        href: "/post-payments?tab=documents-upload-pending",
+      },
+      {
+        label: "Efile Pending",
+        href: "/post-payments?tab=efile-pending",
+      },
+    ],
+  },
   { label: "Revert Clients", href: "/revert-client" },
 ]
 
@@ -39,12 +53,23 @@ function NavbarContent() {
     )
   }
 
+  const isManagePostPaymentsActive = () => {
+    const tab = searchParams.get("tab")
+    return (
+      pathname === "/post-payments" ||
+      tab === "documents-upload-pending" ||
+      tab === "efile-pending"
+    )
+  }
+
   return (
     <div className="bg-[#1D2B48] w-55 p-3 pt-6 flex flex-col gap-3 items-start rounded-lg relative">
       {navItems.map((item) => {
         const isActive =
           item.label === "Manage Tax Organizer"
             ? isManageTaxActive()
+            : item.label === "Manage Post Payments"
+            ? isManagePostPaymentsActive()
             : pathname === item.href ||
               (item.subItems &&
                 item.subItems.some((sub) =>
@@ -54,7 +79,7 @@ function NavbarContent() {
 
         return (
           <div
-            key={item.href}
+            key={`${item.label}-${item.href}`}
             className="relative w-full"
             onMouseEnter={() => setOpenDropdown(item.label)}
             onMouseLeave={() => setOpenDropdown(null)}
@@ -79,12 +104,12 @@ function NavbarContent() {
               </h3>
             </Link>
             {item.subItems && isDropdownOpen && (
-              <div className="absolute top-0 left-full ml-0.5 w-48 bg-[#2e3c5d] rounded-md shadow-lg z-50">
+              <div className="absolute top-0 left-full ml-0.5 bg-[#2e3c5d] rounded-md shadow-lg z-50 min-w-max">
                 {item.subItems.map((sub) => (
                   <Link
-                    key={sub.label}
+                    key={`${sub.label}-${sub.href}`}
                     href={sub.href}
-                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400 rounded-md"
+                    className="block px-4 py-2 text-sm text-white hover:bg-[#3a4b70] hover:text-red-400 rounded-md whitespace-nowrap"
                   >
                     {sub.label}
                   </Link>
@@ -98,10 +123,11 @@ function NavbarContent() {
   )
 }
 
-
 export default function Navbar() {
   return (
-    <Suspense fallback={<div className="text-white p-3">Loading Navbar...</div>}>
+    <Suspense
+      fallback={<div className="text-white p-3">Loading Navbar...</div>}
+    >
       <NavbarContent />
     </Suspense>
   )
