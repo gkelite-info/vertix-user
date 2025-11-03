@@ -107,8 +107,17 @@ export const updateAssignedUser = async (rowId: number, assigned: string) => {
 export const saveComment = async (
   rowId: number,
   comment: string,
-  updatedBy: string
+  updatedBy?: string
 ) => {
+  if (!comment || comment.trim() === "") {
+    const { data, error } = await supabaseCustomer
+      .from("filing_year")
+      .update({ comments: "" })
+      .eq("filingYearId", rowId)
+
+    if (error) throw error
+    return data
+  }
   const timestamp = new Date().toLocaleString()
   const updatedComment = `${comment}\n\nUpdated by ${updatedBy} at ${timestamp}`
   const { data, error } = await supabaseCustomer

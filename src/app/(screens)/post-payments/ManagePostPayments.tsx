@@ -17,9 +17,10 @@ import {
   updateSubStatus,
 } from "@/app/api/supabaseApi/tax-organizer"
 import { getFollowupUsersData } from "@/app/api/supabaseApi/pre-register"
+import { useSearchParams } from "next/navigation"
 import { FaFilter } from "react-icons/fa"
-import { getAllRegisteredClientsReviews } from "@/app/api/supabaseApi/review"
 import ConfirmModal from "@/utils/confirmModel"
+import { getAllRegisteredClientsPostPayments } from "@/app/api/supabaseApi/post-payments"
 
 type ManageTaxType = {
   filingYearId: number
@@ -36,16 +37,29 @@ type ManageTaxType = {
   updatedAt: string
 }
 
-const statusOptions = ["Review Pending", "Payment Pending", "Post Payments"]
+// 👇 Put this near top of the file (after imports)
+const getStatusOptions = (tab?: string) => {
+  if (tab === "documents-upload-pending") {
+    return [
+      "Post Payments",
+      "Bank Info Pending",
+      "Document Upload Pending",
+      "Client 8879 Review Pending",
+      "E-File Pending",
+    ]
+  }
+  return [
+    "E-File Pending",
+    "Federal E-Filing Pending",
+    "State E-File Pending",
+    "E-File Done",
+    "Final Document Pending",
+    "Final Document Uploaded",
+    "Process Completed",
+  ]
+}
 
-const subStatusOptions = [
-  "Select Sub-Status",
-  "Voicemail",
-  "Call Later",
-  "Not Interested",
-  "DND",
-  "Already Filed",
-]
+const subStatusOptions = ["Select Sub-Status", "Voicemail", "Call Later"]
 
 const lastActorOptions = [
   "Additional Documents Pending",
@@ -55,7 +69,7 @@ const lastActorOptions = [
 
 const PAGE_SIZE = 25
 
-const Reviews = () => {
+const ManagePostPayments = () => {
   const [data, setData] = useState<ManageTaxType[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [currentCommentRow, setCurrentCommentRow] =
@@ -72,9 +86,13 @@ const Reviews = () => {
   const [showAssignedDropdown, setShowAssignedDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab")
+  const tab = tabParam ?? undefined
+
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<{
-    type: "sub_status"
+    type: "status" | "subStatus"
     row: ManageTaxType
     value: string
   } | null>(null)
@@ -99,9 +117,10 @@ const Reviews = () => {
 
       try {
         if (showLoader) setIsClientsDataLoading(true)
-        const { data, totalCount } = await getAllRegisteredClientsReviews(
+        const { data, totalCount } = await getAllRegisteredClientsPostPayments(
           userRole,
           userName,
+          tab || undefined,
           currentPage,
           PAGE_SIZE,
           assignedFilter
@@ -115,7 +134,7 @@ const Reviews = () => {
         if (showLoader) setIsClientsDataLoading(false)
       }
     },
-    [userRole, userName, currentPage, assignedFilter]
+    [userRole, userName, tab, currentPage, assignedFilter]
   )
 
   // 🆕 CHANGE: trigger fetchClients when deps are ready/changed
@@ -123,7 +142,7 @@ const Reviews = () => {
     // wait until userRole is available (set by getUser effect)
     if (!userRole) return
     fetchClients(true)
-  }, [fetchClients, userRole, userName, currentPage])
+  }, [fetchClients, userRole, userName, tab, currentPage])
 
   // Fetch assigned users once
   useEffect(() => {
@@ -152,17 +171,35 @@ const Reviews = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // 🆕 CHANGE: On update APIs, call server then refresh list via fetchClients()
   const handleStatusChange = async (row: ManageTaxType, value: string) => {
-    try {
-      setIsClientsDataLoading(true) // show loader while updating + refetching
-      await updateStatus(row.filingYearId, value)
-      if (["Payment Pending", "Post Payments"].includes(value)) {
+    const shouldReset =
+      tab === "documents-upload-pending" && value === "E-File Pending"
+
+    if (shouldReset) {
+      try {
+        setIsClientsDataLoading(true)
+        await updateStatus(row.filingYearId, value)
         await updateLastActor(row.filingYearId, null as any)
         await updateSubStatus(row.filingYearId, null as any)
         await updateAssignedUser(row.filingYearId, null as any)
         await saveComment(row.filingYearId, "")
+        await fetchClients(false)
+        toast.success("Status updated successfully")
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to update status")
+      } finally {
+        setIsClientsDataLoading(false)
       }
+      return
+    }
+    if (["Not Interested", "Already Filed"].includes(value)) {
+      setPendingAction({ type: "status", row, value })
+      setConfirmModalOpen(true)
+      return
+    }
+    try {
+      setIsClientsDataLoading(true)
+      await updateStatus(row.filingYearId, value)
       // Re-fetch from API to ensure filters are applied (e.g. Tax Org Pending removed from current tab)
       await fetchClients(false) // false => we already set loader manually
       toast.success("Status updated successfully")
@@ -175,7 +212,7 @@ const Reviews = () => {
 
   const handleSubStatusChange = async (row: ManageTaxType, value: string) => {
     if (["Not Interested", "Already Filed"].includes(value)) {
-      setPendingAction({ type: "sub_status", row, value })
+      setPendingAction({ type: "subStatus", row, value })
       setConfirmModalOpen(true)
       return
     }
@@ -206,17 +243,23 @@ const Reviews = () => {
 
   const handleConfirmAction = async () => {
     if (!pendingAction) return
-    const { row, value } = pendingAction
+    const { type, row, value } = pendingAction
+
     try {
       setIsClientsDataLoading(true)
-      await updateSubStatus(row.filingYearId, value)
+      if (type === "status") {
+        await updateStatus(row.filingYearId, value)
+        toast.success("Status updated successfully")
+      } else {
+        await updateSubStatus(row.filingYearId, value)
+        toast.success("Sub-Status updated successfully")
+      }
       await fetchClients(false)
-      toast.success("Sub-Status updated successfully")
     } catch (err: any) {
-      toast.error(err?.message || "Failed to update sub-status")
+      toast.error(err?.message || "Failed to update")
     } finally {
-      setConfirmModalOpen(false)
       setPendingAction(null)
+      setConfirmModalOpen(false)
       setIsClientsDataLoading(false)
     }
   }
@@ -266,7 +309,7 @@ const Reviews = () => {
           onChange={(e) => handleStatusChange(row, e.target.value)}
           className="border px-2 py-1 rounded cursor-pointer"
         >
-          {statusOptions.map((status) => (
+          {getStatusOptions(tab ?? undefined).map((status) => (
             <option key={status} value={status}>
               {status}
             </option>
@@ -292,7 +335,6 @@ const Reviews = () => {
       ),
     },
     {
-      // 🆕 CHANGE: Auto-login to customer portal via Supabase magic link
       name: "Action",
       render: (row) => (
         <button
@@ -300,7 +342,6 @@ const Reviews = () => {
             try {
               toast.loading("Generating secure login link...", { id: "taxorg" })
 
-              // 🆕 Fetch the customer's email from your data (already joined in query)
               const customerEmail =
                 (row as any)?.customer?.email || (row as any)?.email
               if (!customerEmail) {
@@ -308,7 +349,6 @@ const Reviews = () => {
                 return
               }
 
-              // 🆕 Dynamically import helper to avoid bundling service key
               const { generateCustomerLoginLink } = await import(
                 "@/app/api/supabaseApi/tax-organizer"
               )
@@ -329,7 +369,7 @@ const Reviews = () => {
           }}
           className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
         >
-          Fee & Tax Summary
+          Tax Organizer
         </button>
       ),
     },
@@ -464,9 +504,17 @@ const Reviews = () => {
 
   return (
     <div className="w-full p-2 bg-[#EBEBEB] h-[100%] flex flex-col justify-between">
-      <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
-        Manage Reviews
-      </h1>
+      {tab === "registered-clients" && (
+        <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
+          Registered Clients
+        </h1>
+      )}
+      {tab === "documents-pending" && (
+        <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
+          Documents Pending
+        </h1>
+      )}
+
       <Table
         columns={columns}
         data={data.slice(
@@ -507,4 +555,4 @@ const Reviews = () => {
   )
 }
 
-export default Reviews
+export default ManagePostPayments
