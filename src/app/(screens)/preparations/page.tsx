@@ -210,6 +210,10 @@ const Preparations = () => {
     try {
       setIsClientsDataLoading(true)
       await updateSubStatus(row.filingYearId, value)
+      await updateStatus(row.filingYearId, null as any)
+      await updateLastActor(row.filingYearId, null as any)
+      await updateAssignedUser(row.filingYearId, null as any)
+      await saveComment(row.filingYearId, "")
       await fetchClients(false)
       toast.success("Sub-Status updated successfully")
     } catch (err: any) {
