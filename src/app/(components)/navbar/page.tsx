@@ -1,10 +1,11 @@
 "use client"
 
+import { getUser } from "@/app/api/supabaseApi/userApi"
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
-const navItems = [
+const baseNavItems = [
   { label: "View Clients", href: "/dashboard" },
   { label: "Pre-Registered Clients", href: "/pre-register" },
   //{ label: "Manage Tax Organizer", href: "/manage-tax" },
@@ -43,6 +44,25 @@ function NavbarContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [navItems, setNavItems] = useState(baseNavItems)
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const user = await getUser()
+        if (user?.role === "super_admin") {
+          setNavItems((prev) => {
+            const alreadyExists = prev.some((i) => i.href === "/create-user")
+            if (alreadyExists) return prev
+            return [...prev, { label: "Create User", href: "/create-user" }]
+          })
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err)
+      }
+    }
+    fetchUserRole()
+  }, [])
 
   const isManageTaxActive = () => {
     const tab = searchParams.get("tab")
