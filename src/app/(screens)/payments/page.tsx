@@ -52,13 +52,7 @@ const subStatusOptions = [
   "Already Filed",
 ]
 
-const lastActorOptions = [
-  "Additional Documents Pending",
-  "Rework Needed",
-  "Rework Completed",
-  "1099-B Pending",
-  "Discussion Pending",
-]
+const lastActorOptions = ["Rework Needed", "Rework Completed", "1099-B Pending"]
 
 const PAGE_SIZE = 25
 
@@ -233,11 +227,17 @@ const PaymentPending = () => {
     const { type, row, value } = pendingAction
     try {
       setIsClientsDataLoading(true)
-      if (type === "sub_status") {
-        await updateSubStatus(row.filingYearId, value)
-      } else if (type === "status") {
+      if (type === "status") {
         await updateStatus(row.filingYearId, value)
+        await updateSubStatus(row.filingYearId, null as any)
+      } else if (type === "sub_status") {
+        await updateSubStatus(row.filingYearId, value)
+        await updateStatus(row.filingYearId, null as any)
       }
+
+      await updateLastActor(row.filingYearId, null as any)
+      await updateAssignedUser(row.filingYearId, null as any)
+      await saveComment(row.filingYearId, null as any)
       await fetchClients(false)
       toast.success(
         `${type === "status" ? "Status" : "Sub-Status"} updated successfully`

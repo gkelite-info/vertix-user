@@ -24,7 +24,7 @@ import ConfirmModal from "@/utils/confirmModel"
 
 type ManageTaxType = {
   filingYearId: number
-  customerId : number
+  customerId: number
   firstname: string
   lastname: string
   timezone: string
@@ -59,7 +59,6 @@ const lastActorOptions = [
   "Rework Needed",
   "Discussion Pending",
 ]
-
 
 const PAGE_SIZE = 25
 
@@ -215,7 +214,6 @@ const ManageTax = () => {
     }
   }
 
-
   const handleConfirmAction = async () => {
     if (!pendingAction) return
     const { type, row, value } = pendingAction
@@ -224,11 +222,19 @@ const ManageTax = () => {
       setIsClientsDataLoading(true)
       if (type === "status") {
         await updateStatus(row.filingYearId, value)
-        toast.success("Status updated successfully")
+        await updateSubStatus(row.filingYearId, null as any)
       } else {
         await updateSubStatus(row.filingYearId, value)
-        toast.success("Sub-Status updated successfully")
+        await updateStatus(row.filingYearId, null as any)
       }
+
+      await updateLastActor(row.filingYearId, null as any)
+      await updateAssignedUser(row.filingYearId, null as any)
+      await saveComment(row.filingYearId, "")
+
+      toast.success(
+        `${type === "status" ? "Status" : "Sub-Status"} updated and cleared`
+      )
       await fetchClients(false)
     } catch (err: any) {
       toast.error(err?.message || "Failed to update")
@@ -365,7 +371,6 @@ const ManageTax = () => {
         </select>
       ),
     },
-    
 
     {
       name: "Comments",
@@ -390,83 +395,86 @@ const ManageTax = () => {
     },
     ...(userRole === "super_admin"
       ? [
-        {
-          name: (
-            <div
-              className="relative flex items-center gap-2"
-              ref={dropdownRef}
-            >
-              Assigned To
-              <FaFilter
-                className={`cursor-pointer transition-colors duration-150 ${showAssignedDropdown ? "text-white" : "text-white" // 🆕 CHANGE: darker gray default
+          {
+            name: (
+              <div
+                className="relative flex items-center gap-2"
+                ref={dropdownRef}
+              >
+                Assigned To
+                <FaFilter
+                  className={`cursor-pointer transition-colors duration-150 ${
+                    showAssignedDropdown ? "text-white" : "text-white" // 🆕 CHANGE: darker gray default
                   } hover:text-white`} // 🆕 CHANGE: clearer hover
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowAssignedDropdown((prev) => !prev)
-                }}
-              />
-              {/* 🆕 FIX: Dropdown now opens below the icon with proper z-index */}
-              {showAssignedDropdown && (
-                <div
-                  className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                  // 🆕 FIX: Added zIndex, overscrollBehavior, pointer-events
-                  style={{
-                    position: "absolute", // --- Reinforce positioning for dropdown
-                    zIndex: 100, // --- Ensures dropdown appears above table
-                    overscrollBehavior: "contain", // --- Prevents table from scrolling
-                    scrollbarWidth: "thin",
-                    scrollbarColor: "#9CA3AF #F3F4F6",
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowAssignedDropdown((prev) => !prev)
                   }}
-                  onWheel={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent scroll on mousewheel
-                  onClick={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent click capture
-                >
+                />
+                {/* 🆕 FIX: Dropdown now opens below the icon with proper z-index */}
+                {showAssignedDropdown && (
                   <div
-                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${assignedFilter === ""
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-800"
-                      }`}
-                    onClick={() => {
-                      setAssignedFilter("")
-                      setShowAssignedDropdown(false)
+                    className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    // 🆕 FIX: Added zIndex, overscrollBehavior, pointer-events
+                    style={{
+                      position: "absolute", // --- Reinforce positioning for dropdown
+                      zIndex: 100, // --- Ensures dropdown appears above table
+                      overscrollBehavior: "contain", // --- Prevents table from scrolling
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#9CA3AF #F3F4F6",
                     }}
+                    onWheel={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent scroll on mousewheel
+                    onClick={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent click capture
                   >
-                    All
-                  </div>
-                  {assignedUsers.map((user) => (
                     <div
-                      key={user}
-                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${assignedFilter === user
-                        ? "bg-blue-50 text-blue-700 font-medium"
-                        : "text-gray-800"
-                        }`}
+                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${
+                        assignedFilter === ""
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-800"
+                      }`}
                       onClick={() => {
-                        setAssignedFilter(user)
+                        setAssignedFilter("")
                         setShowAssignedDropdown(false)
                       }}
                     >
-                      {user}
+                      All
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ),
-          render: (row: ManageTaxType) => (
-            <select
-              value={row?.assigned || ""}
-              onChange={(e) => handleAssignedChange(row, e.target.value)}
-              className="border px-2 py-1 rounded cursor-pointer"
-            >
-              <option value="">Select User</option>
-              {assignedUsers.map((user) => (
-                <option key={user} value={user}>
-                  {user}
-                </option>
-              ))}
-            </select>
-          ),
-        } as TableColumn<ManageTaxType>,
-      ]
+                    {assignedUsers.map((user) => (
+                      <div
+                        key={user}
+                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                          assignedFilter === user
+                            ? "bg-blue-50 text-blue-700 font-medium"
+                            : "text-gray-800"
+                        }`}
+                        onClick={() => {
+                          setAssignedFilter(user)
+                          setShowAssignedDropdown(false)
+                        }}
+                      >
+                        {user}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ),
+            render: (row: ManageTaxType) => (
+              <select
+                value={row?.assigned || ""}
+                onChange={(e) => handleAssignedChange(row, e.target.value)}
+                className="border px-2 py-1 rounded cursor-pointer"
+              >
+                <option value="">Select User</option>
+                {assignedUsers.map((user) => (
+                  <option key={user} value={user}>
+                    {user}
+                  </option>
+                ))}
+              </select>
+            ),
+          } as TableColumn<ManageTaxType>,
+        ]
       : []),
 
     {
@@ -477,7 +485,6 @@ const ManageTax = () => {
 
   return (
     <div className="w-full p-2 bg-[#EBEBEB] h-[100%] flex flex-col justify-between">
-
       {tab === "registered-clients" && (
         <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
           Registered Clients
