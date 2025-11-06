@@ -49,10 +49,12 @@ export default function Header() {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
-      router.push("/login")
+      setIsLogoutModalOpen(false)
+      toast.success("Logged out successfully")
+
       localStorage.removeItem("sb-support-auth")
       localStorage.removeItem("token")
-      toast.success("Logged out successfully")
+      router.push("/login")
     } catch (err: any) {
       console.error("Logout error:", err)
       toast.error(err?.message || "Error logging out. Please try again.")
@@ -91,7 +93,7 @@ export default function Header() {
           </div>
           <button
             onClick={() => setIsLogoutModalOpen(true)}
-            className="bg-[#E63946] text-white text-sm font-medium px-6 h-[80%] rounded-md hover:bg-[#d62828] transition-all duration-200 shadow-sm"
+            className="bg-[#E63946] text-white text-sm font-medium px-6 h-[80%] cursor-pointer rounded-md hover:bg-[#d62828] transition-all duration-200 shadow-sm"
           >
             Logout
           </button>

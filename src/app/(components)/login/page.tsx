@@ -82,7 +82,7 @@ function Page() {
 
       if (data?.session && data?.user) {
         login(data.session?.access_token)
-        router.push("/dashboard")
+        router.push("/view-clients")
         setTimeout(() => toast.success("Login successful"), 1000)
       }
 

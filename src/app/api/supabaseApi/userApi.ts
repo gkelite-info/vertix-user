@@ -44,11 +44,12 @@ export const getAllCustomers = async (
       if (error) throw new Error(error.message)
 
       // Local filter for combined first and last name match
-      const filtered = data?.filter(
-        (row) =>
-          row.firstname?.toLowerCase().includes(first) &&
-          row.lastname?.toLowerCase().includes(last)
-      ) || []
+      const filtered =
+        data?.filter(
+          (row) =>
+            row.firstname?.toLowerCase().includes(first) &&
+            row.lastname?.toLowerCase().includes(last)
+        ) || []
 
       return { data: filtered, count: filtered.length }
     }
@@ -94,4 +95,23 @@ export const getUser = async () => {
     console.error("Error fetching customer:", error.message)
     throw error
   }
+}
+
+// ✅ InsertUser helper function
+export const insertUser = async (userData: {
+  firstname: string
+  lastname: string
+  email: string
+  phone: string
+  role: string
+  password: string
+}) => {
+  const res = await fetch("/api/createUser", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || "Failed to create user")
+  return true
 }
