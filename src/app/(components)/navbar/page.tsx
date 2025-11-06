@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 
 const baseNavItems = [
-  { label: "View Clients", href: "/dashboard" },
+  { label: "View Clients", href: "/view-clients" },
   { label: "Pre-Registered Clients", href: "/pre-register" },
   //{ label: "Manage Tax Organizer", href: "/manage-tax" },
   {

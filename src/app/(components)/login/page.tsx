@@ -139,7 +139,7 @@ function Page() {
                     className="lg:h-[100%] lg:w-[100%] text-black font-medium lg:p-2 lg:ml-2 border-none focus:outline-none focus:ring-0"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        handleLogin();
+                        handleLogin()
                       }
                     }}
                   />
@@ -180,7 +180,7 @@ function Page() {
                     onClick={handleLogin}
                     disabled={isSubmitted}
                   >
-                    Login
+                    {isSubmitted ? "Loading..." : "Login"}
                   </button>
                   <div className="flex lg:gap-2 items-end justify-center lg:h-[35%] lg:w-[80%]">
                     {/* <h5 className="font-medium text-[#979797] text-sm lg:w-[50%]">Don't have an account ? </h5> */}
