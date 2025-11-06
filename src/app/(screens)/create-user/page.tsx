@@ -2,9 +2,10 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Icon } from "@iconify/react"
+import { getUser, insertUser } from "@/app/api/supabaseApi/userApi"
 // import { supabase } from "../../../../utils/supabase/client"
 // import { insertCustomer } from "@/app/api/SupabaseAPI/customer/customerApi"
 
@@ -18,8 +19,9 @@ export default function CreateUser() {
     phone: "",
     password: "",
     confirmPassword: "",
+    // ✅ added role field
+    role: "admin",
   })
-  const [, setLoading] = useState(false)
   const [, setEmail] = useState("")
   const [, setEmailError] = useState("")
   const [remember, setRemember] = useState(false)
@@ -27,6 +29,32 @@ export default function CreateUser() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [phoneCode, setPhoneCode] = useState("")
   const [phone, setPhone] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  // ✅ Added: Role checking logic
+  const [checkingRole, setCheckingRole] = useState(true)
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        // Replace this with your real user fetch logic
+        const res = await getUser() // Example API
+        const userRole = res?.role
+
+        if (userRole !== "super_admin") {
+          router.replace("/view-clients")
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error)
+        router.replace("/view-clients")
+      } finally {
+        setCheckingRole(false)
+      }
+    }
+
+    getUserData()
+  }, [router])
+  // ✅ End role check logic
 
   const handlePhoneCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
@@ -76,16 +104,42 @@ export default function CreateUser() {
     }
 
     try {
-      setLoading(true)
-      toast.success(
-        "Registration successful! Please check your email to confirm."
-      )
+      setIsLoading(true)
+      await insertUser({
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: formData.role,
+      })
+      toast.success("Registration successful!")
+      setFormData({
+        firstname: "",
+        lastname: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        role: "admin",
+      })
+      setPhone("")
+      setPhoneCode("")
     } catch (err: any) {
       console.error(err)
-      toast.error(err.message)
+      toast.error(err?.message || "Failed to create user")
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
+  }
+
+  // ✅ Show loading while role checking
+  if (checkingRole) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-lg font-medium text-gray-700">Loading...</p>
+      </div>
+    )
   }
 
   return (
@@ -147,6 +201,23 @@ export default function CreateUser() {
               className="flex-1 text-black px-2 py-2 focus:outline-none"
             />
           </div>
+
+          {/* ✅ Role Dropdown */}
+          <div className="flex flex-col">
+            <label htmlFor="role" className="text-gray-600 text-sm mb-1">
+              Select Role
+            </label>
+            <select
+              id="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="border-b-2 border-gray-300 text-black font-medium focus:outline-none focus:border-[#1D2B48] py-2"
+            >
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+          {/* ✅ End role dropdown */}
 
           {/* Password */}
           <div className="flex items-center border-b-2 border-gray-300">
@@ -211,8 +282,9 @@ export default function CreateUser() {
               type="button"
               className="w-full bg-[#1D2B48] text-white py-2.5 rounded-full font-medium hover:bg-[#27385E] transition"
               onClick={handleSignup}
+              disabled={isLoading}
             >
-              Create Account
+              {isLoading ? "Creating..." : "Create Account"}
             </button>
           </div>
         </div>

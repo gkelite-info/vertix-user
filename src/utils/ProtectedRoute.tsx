@@ -26,7 +26,7 @@ export default function ProtectedRoute({
     }
 
     if (pathname === "/login") {
-      router.replace("/dashboard")
+      router.replace("/view-clients")
       setIsAllowed(false)
       return
     }
