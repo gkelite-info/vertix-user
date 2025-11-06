@@ -55,8 +55,6 @@ if (typeof window !== "undefined") {
         removeEventListener: () => {},
         close: () => {},
       }
-
-      console.log("✅ Customer impersonation client fully isolated.")
     } catch (e) {
       console.warn("⚠️ Isolation skipped:", e)
     }
