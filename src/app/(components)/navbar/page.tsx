@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from "react"
 
 const baseNavItems = [
   { label: "View Clients", href: "/view-clients" },
+  { label: "Messages", href: "/messages" },
   { label: "Pre-Registered Clients", href: "/pre-register" },
   //{ label: "Manage Tax Organizer", href: "/manage-tax" },
   {
@@ -89,8 +90,8 @@ function NavbarContent() {
           item.label === "Manage Tax Organizer"
             ? isManageTaxActive()
             : item.label === "Manage Post Payments"
-            ? isManagePostPaymentsActive()
-            : pathname === item.href ||
+              ? isManagePostPaymentsActive()
+              : pathname === item.href ||
               (item.subItems &&
                 item.subItems.some((sub) =>
                   pathname.startsWith(sub.href.split("?")[0])
@@ -111,14 +112,12 @@ function NavbarContent() {
               key={item.href}
               href={item.href}
               //className="w-full p-2.5 rounded-md"
-              className={`w-full p-2.5 rounded-md flex justify-between items-center transition-colors ${
-                isActive ? "bg-[#ebebeb]" : "hover:bg-[#2e3c5d]"
-              }`}
+              className={`w-full p-2.5 rounded-md flex justify-between items-center transition-colors ${isActive ? "bg-[#ebebeb]" : "hover:bg-[#2e3c5d]"
+                }`}
             >
               <h3
-                className={`text-sm font-medium cursor-pointer transition-colors ${
-                  isActive ? "text-black" : "text-white hover:text-red-400"
-                }`}
+                className={`text-sm font-medium cursor-pointer transition-colors ${isActive ? "text-black" : "text-white hover:text-red-400"
+                  }`}
               >
                 {item.label}
               </h3>
