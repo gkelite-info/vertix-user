@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
 
-// Add server-only check
 if (typeof window !== 'undefined') {
   throw new Error('supabaseAdmin can only be used on the server side')
 }

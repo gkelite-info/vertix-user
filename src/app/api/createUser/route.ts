@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { supabaseUserAdmin } from "../supabaseUserAdmin"
 
@@ -6,7 +5,6 @@ export async function POST(req: Request) {
   try {
     const userData = await req.json()
 
-    // ✅ Create Auth user using admin privileges
     const { data: authUser, error: authError } =
       await supabaseUserAdmin.auth.admin.createUser({
         email: userData.email,
@@ -17,7 +15,6 @@ export async function POST(req: Request) {
 
     const now = new Date()
 
-    // ✅ Insert record into vertixusers
     const { error } = await supabaseUserAdmin.from("vertixusers").insert([
       {
         auth_id: authUser.user.id,

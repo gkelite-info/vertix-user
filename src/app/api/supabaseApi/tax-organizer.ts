@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
 
 export const getAllRegisteredClients = async (
@@ -22,7 +21,6 @@ export const getAllRegisteredClients = async (
       { count: "exact" }
     )
 
-    // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
@@ -44,7 +42,6 @@ export const getAllRegisteredClients = async (
         )
     }
 
-    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 
@@ -81,7 +78,6 @@ export const updateStatus = async (rowId: number, status: string) => {
   return data
 }
 
-// 🆕 Update sub-status
 export const updateSubStatus = async (rowId: number, sub_status: string) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
@@ -92,7 +88,6 @@ export const updateSubStatus = async (rowId: number, sub_status: string) => {
   return data
 }
 
-// 🆕 Update assigned user (followup)
 export const updateAssignedUser = async (rowId: number, assigned: string) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
@@ -103,7 +98,6 @@ export const updateAssignedUser = async (rowId: number, assigned: string) => {
   return data
 }
 
-// 🆕 Save comment for a row
 export const saveComment = async (
   rowId: number,
   comment: string,
@@ -129,10 +123,8 @@ export const saveComment = async (
   return data
 }
 
-// Update the generateCustomerLoginLink function:
 export const generateCustomerLoginLink = async (email: string) => {
   try {
-    // Call API route instead of direct admin call
     const response = await fetch("/api/generate-magic-link", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -152,7 +144,6 @@ export const generateCustomerLoginLink = async (email: string) => {
   }
 }
 
-// 🆕 Update last actor
 export const updateLastActor = async (rowId: number, last_actor: string) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
 
 export const getAllManageClients = async (
@@ -23,7 +22,6 @@ export const getAllManageClients = async (
     query = query.or(
       'status.in.("Not Interested","Already Filed"),sub_status.in.("Not Interested","Already Filed")'
     )
-    // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
@@ -31,7 +29,6 @@ export const getAllManageClients = async (
       query = query.eq("assigned", assignedFilter)
     }
 
-    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 

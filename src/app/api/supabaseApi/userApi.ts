@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
 export const getAllCustomers = async (
@@ -13,7 +12,7 @@ export const getAllCustomers = async (
     const baseQuery = supabaseCustomer
       .from("vertixcustomers")
       .select("*", { count: "exact" })
-      .order("updatedAt", { ascending: false }) // newest records first
+      .order("updatedAt", { ascending: false })
 
     if (!search || !search.trim()) {
       const { data, error, count } = await baseQuery.range(from, to)
@@ -24,7 +23,6 @@ export const getAllCustomers = async (
     const searchTerm = search.trim().toLowerCase()
     const parts = searchTerm.split(" ").filter(Boolean)
 
-    // MARKED CHANGE: Return no results if more than two words typed
     if (parts.length > 2) {
       return { data: [], count: 0 }
     }
@@ -33,7 +31,6 @@ export const getAllCustomers = async (
     const last = parts[1] || ""
 
     if (first && last) {
-      // Combined first + last name search with pagination on first name
       const { data, error, count } = await supabaseCustomer
         .from("vertixcustomers")
         .select("*", { count: "exact" })
@@ -43,7 +40,6 @@ export const getAllCustomers = async (
 
       if (error) throw new Error(error.message)
 
-      // Local filter for combined first and last name match
       const filtered =
         data?.filter(
           (row) =>
@@ -54,7 +50,6 @@ export const getAllCustomers = async (
       return { data: filtered, count: filtered.length }
     }
 
-    // Single word search term (or only one word provided)
     const term = first
 
     const { data, error, count } = await baseQuery
@@ -74,7 +69,6 @@ export const getAllCustomers = async (
 
 export const getUser = async () => {
   try {
-    // 1️⃣ Get Supabase Auth User
     const {
       data: { user },
       error: authError,
@@ -82,7 +76,6 @@ export const getUser = async () => {
 
     if (authError || !user) throw new Error("Not authenticated")
 
-    // 2️⃣ Get App User from your table (vertixusers)
     const { data: appUser, error } = await supabase
       .from("vertixusers")
       .select("*")
@@ -97,7 +90,6 @@ export const getUser = async () => {
   }
 }
 
-// ✅ InsertUser helper function
 export const insertUser = async (userData: {
   firstname: string
   lastname: string
@@ -115,3 +107,35 @@ export const insertUser = async (userData: {
   if (!res.ok) throw new Error(data.error || "Failed to create user")
   return true
 }
+
+export const getAllUsers = async (
+  page: number = 1,
+  pageSize: number = 25,
+) => {
+  try {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
+      .from("vertixusers")
+      .select("*", { count: "exact" })
+      .eq("is_deleted", false)
+      .order("updatedAt", { ascending: false })
+      .range(from, to);
+
+    if (error) throw new Error(error.message);
+
+    const mapped = (data || []).map((u) => ({
+      id: u.userId,
+      email: u.email,
+      full_name: `${u.firstname} ${u.lastname}`,
+      phone: u.phone,
+      created_at: u.createdAt,
+    }));
+
+    return { data: mapped, count: count || 0 };
+  } catch (err: any) {
+    console.error("Supabase fetch error:", err.message);
+    return { data: [], count: 0 };
+  }
+};

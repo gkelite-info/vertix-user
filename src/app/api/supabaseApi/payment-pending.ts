@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
 
 export const getAllRegisteredClientsPaymentPending = async (
@@ -24,7 +23,6 @@ export const getAllRegisteredClientsPaymentPending = async (
     query = query.or(
       'sub_status.is.null,and(sub_status.neq."Not Interested",sub_status.neq."Already Filed")'
     )
-    // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
@@ -32,7 +30,6 @@ export const getAllRegisteredClientsPaymentPending = async (
       query = query.eq("assigned", assignedFilter)
     }
 
-    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { getUser } from "@/app/api/supabaseApi/userApi"
 import { useEffect, useRef, useState } from "react"
@@ -15,7 +14,7 @@ export default function Header() {
   const hasFetchedUser = useRef(false)
   const fetchUser = async () => {
     try {
-      if (hasFetchedUser.current) return // 🟢 Prevent duplicate calls
+      if (hasFetchedUser.current) return
       hasFetchedUser.current = true
       const appUser = await getUser()
       setUserName(appUser?.name)
@@ -41,7 +40,7 @@ export default function Header() {
     )
 
     return () => {
-      listener.subscription.unsubscribe() // 🟢 Correct cleanup
+      listener.subscription.unsubscribe()
     }
   }, [])
 

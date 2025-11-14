@@ -1,4 +1,3 @@
-// ✅ This line tells Next.js not to pre-render (avoids build error)
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"

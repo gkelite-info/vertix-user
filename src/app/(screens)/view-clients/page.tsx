@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import Pagination from "@/app/(components)/Table/pagination"
@@ -49,10 +48,10 @@ export default function Dashboard() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search)
-      setCurrentPage(1) // reset page when debounced search changes
-    }, 500) // 500ms debounce delay
+      setCurrentPage(1)
+    }, 500)
 
-    return () => clearTimeout(handler) // cleanup on search change
+    return () => clearTimeout(handler)
   }, [search])
 
   useEffect(() => {
@@ -74,7 +73,6 @@ export default function Dashboard() {
     if (debouncedSearch.trim().length > 0) {
       fetchUsers()
     } else {
-      // If search cleared, optionally clear data
       setData([])
       setTotalCount(0)
     }
@@ -82,7 +80,6 @@ export default function Dashboard() {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
-    //setCurrentPage(1)
   }
 
   return (
@@ -99,7 +96,6 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Table */}
         {search.trim().length > 0 && (
           <div className="mt-10 w-full flex flex-col justify-between h-[100%]">
             <div className="flex-grow overflow-auto scrollbar-hide">
@@ -112,9 +108,9 @@ export default function Dashboard() {
             <div className="mt-auto py-2">
               {totalCount > 0 && (
                 <Pagination
-                  totalItems={totalCount} // total data from API
+                  totalItems={totalCount}
                   currentPage={currentPage}
-                  pageSize={PAGE_SIZE} // items per page
+                  pageSize={PAGE_SIZE}
                   onPageChange={(page) => setCurrentPage(page)}
                 />
               )}
