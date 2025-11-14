@@ -38,22 +38,34 @@ export const supabaseCustomer: SupabaseClient = createClient(
 )
 
 if (typeof window !== "undefined") {
-  ;(async () => {
+  (async () => {
     try {
-      const auth = (supabaseCustomer as SupabaseClient).auth
+      interface BroadcastChannelMock {
+        postMessage: (msg?: unknown) => void
+        addEventListener: (type: string, listener: () => void) => void
+        removeEventListener: (type: string, listener: () => void) => void
+        close: () => void
+      }
+
+      interface InternalAuth {
+        _bc?: BroadcastChannelMock | null
+      }
+
+      const auth = (supabaseCustomer.auth as unknown) as InternalAuth
 
       await new Promise((r) => setTimeout(r, 50))
 
-      if ((auth as any)._bc) (auth as any)._bc.close()
+      if (auth._bc) auth._bc.close()
 
-      ;(auth as any)._bc = {
-        postMessage: () => {},
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        close: () => {},
+      auth._bc = {
+        postMessage: () => { },
+        addEventListener: () => { },
+        removeEventListener: () => { },
+        close: () => { },
       }
     } catch (e) {
       console.warn("Isolation skipped:", e)
     }
   })()
 }
+
