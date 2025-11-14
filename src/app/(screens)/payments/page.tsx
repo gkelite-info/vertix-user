@@ -313,14 +313,20 @@ const PaymentPending = () => {
     },
     {
       name: "Action",
-      render: (row) => (
+      render: (row: ManageTaxType) => (
         <button
           onClick={async () => {
             try {
               toast.loading("Generating secure login link...", { id: "taxorg" })
 
+              const customerData = row as unknown as {
+                customer?: { email?: string }
+                email?: string
+              }
+
               const customerEmail =
-                (row as any)?.customer?.email || (row as any)?.email
+                customerData.customer?.email ?? customerData.email
+
               if (!customerEmail) {
                 toast.error("Customer email not found", { id: "taxorg" })
                 return
@@ -331,17 +337,19 @@ const PaymentPending = () => {
               )
 
               const magicLink = await generateCustomerLoginLink(customerEmail)
-              if (!magicLink) throw new Error("Failed to generate login link")
+              if (!magicLink) {
+                throw new Error("Failed to generate login link")
+              }
 
               toast.success("Redirecting to customer portal...", {
                 id: "taxorg",
               })
               window.open(magicLink, "_blank")
-            } catch (err: any) {
-              console.error("Error opening Tax Organizer:", err)
-              toast.error(err?.message || "Failed to open customer portal", {
-                id: "taxorg",
-              })
+            } catch (err: unknown) {
+              const message =
+                err instanceof Error ? err.message : "Failed to open customer portal"
+
+              toast.error(message, { id: "taxorg" })
             }
           }}
           className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
@@ -421,8 +429,8 @@ const PaymentPending = () => {
                 >
                   <div
                     className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${assignedFilter === ""
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-800"
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-800"
                       }`}
                     onClick={() => {
                       setAssignedFilter("")
@@ -435,8 +443,8 @@ const PaymentPending = () => {
                     <div
                       key={user}
                       className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${assignedFilter === user
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : "text-gray-800"
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "text-gray-800"
                         }`}
                       onClick={() => {
                         setAssignedFilter(user)
