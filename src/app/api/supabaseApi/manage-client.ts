@@ -1,5 +1,15 @@
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
 
+type FilingYearRow = {
+  customer?: {
+    firstname?: string
+    lastname?: string
+    timezone?: string
+    email?: string
+  }
+  [key: string]: unknown
+}
+
 export const getAllManageClients = async (
   role?: string,
   userName?: string,
@@ -19,12 +29,15 @@ export const getAllManageClients = async (
       `,
       { count: "exact" }
     )
+
     query = query.or(
       'status.in.("Not Interested","Already Filed"),sub_status.in.("Not Interested","Already Filed")'
     )
+
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
+
     if (assignedFilter) {
       query = query.eq("assigned", assignedFilter)
     }
@@ -40,7 +53,7 @@ export const getAllManageClients = async (
 
     return {
       data:
-        data?.map((row: any) => ({
+        data?.map((row: FilingYearRow) => ({
           ...row,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
@@ -49,8 +62,11 @@ export const getAllManageClients = async (
         })) ?? [],
       totalCount: count ?? 0,
     }
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message)
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
     return { data: [], totalCount: 0 }
   }
 }

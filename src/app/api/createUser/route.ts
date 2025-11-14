@@ -11,6 +11,7 @@ export async function POST(req: Request) {
         password: userData.password,
         email_confirm: true,
       })
+
     if (authError) throw authError
 
     const now = new Date()
@@ -30,11 +31,21 @@ export async function POST(req: Request) {
         updatedAt: now,
       },
     ])
+
     if (error) throw error
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error("Error creating user:", error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    console.error(
+      "Error creating user:",
+      error instanceof Error ? error.message : "Unknown error"
+    )
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown server error",
+      },
+      { status: 500 }
+    )
   }
 }
