@@ -21,7 +21,8 @@ function Page() {
     const value = e.target.value
     setEmail(value)
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
     if (!emailRegex.test(value)) {
       setEmailError("Please enter a valid email address")
@@ -29,6 +30,7 @@ function Page() {
       setEmailError("")
     }
   }
+
   const handlePasswordChange = (e: { target: { value: string } }) => {
     const value = e.target.value
     setPassword(value)
@@ -45,6 +47,7 @@ function Page() {
   const handleLogin = async () => {
     try {
       setIsSubmitted(true)
+
       if (!email) {
         toast.error("Email is required.")
         return
@@ -60,6 +63,7 @@ function Page() {
         toast.error("Password must be at least 6 characters.")
         return
       }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -75,10 +79,15 @@ function Page() {
         router.push("/view-clients")
         setTimeout(() => toast.success("Login successful"), 1000)
       }
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log("login error", error)
-      toast.error("An unexpected error occurred. Please try again.")
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again."
+
+      toast.error(message)
       return
     } finally {
       setIsSubmitted(false)

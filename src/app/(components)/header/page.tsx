@@ -45,20 +45,23 @@ export default function Header() {
   }, [])
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      setIsLogoutModalOpen(false)
-      toast.success("Logged out successfully")
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
 
-      localStorage.removeItem("sb-support-auth")
-      localStorage.removeItem("token")
-      router.push("/login")
-    } catch (err: any) {
-      console.error("Logout error:", err)
-      toast.error(err?.message || "Error logging out. Please try again.")
-    }
+    setIsLogoutModalOpen(false)
+    toast.success("Logged out successfully")
+
+    localStorage.removeItem("sb-support-auth")
+    localStorage.removeItem("token")
+    router.push("/login")
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Error logging out. Please try again."
+    console.error("Logout error:", err)
+    toast.error(errorMsg)
   }
+}
+
 
   return (
     <>
