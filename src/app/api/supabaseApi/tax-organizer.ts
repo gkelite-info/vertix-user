@@ -1,5 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
+
+type FilingYearRow = {
+  customer?: {
+    firstname?: string
+    lastname?: string
+    timezone?: string
+    email?: string
+  }
+  [key: string]: unknown
+}
 
 export const getAllRegisteredClients = async (
   role?: string,
@@ -22,10 +31,10 @@ export const getAllRegisteredClients = async (
       { count: "exact" }
     )
 
-    // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
+
     if (assignedFilter) {
       query = query.eq("assigned", assignedFilter)
     }
@@ -44,7 +53,6 @@ export const getAllRegisteredClients = async (
         )
     }
 
-    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 
@@ -56,17 +64,28 @@ export const getAllRegisteredClients = async (
 
     return {
       data:
-        data?.map((row: any) => ({
-          ...row,
+        data?.map((row) => ({
+          filingYearId: row.filingYearId,
+          customerId: row.customerId,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
-          email: row.customer?.email ?? "",
+          status: row.status ?? "",
+          sub_status: row.sub_status ?? "",
+          last_actor: row.last_actor ?? "",
+          action: row.action ?? "",
+          comments: row.comments ?? "",
+          assigned: row.assigned ?? "",
+          updatedAt: row.updatedAt ?? "",
         })) ?? [],
-      totalCount: count ?? 0,
+      totalCount: count ?? 0,   // ✅ FIXED
     }
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message)
+
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
     return { data: [], totalCount: 0 }
   }
 }
@@ -81,8 +100,10 @@ export const updateStatus = async (rowId: number, status: string) => {
   return data
 }
 
-// 🆕 Update sub-status
-export const updateSubStatus = async (rowId: number, sub_status: string) => {
+export const updateSubStatus = async (
+  rowId: number,
+  sub_status: string | null
+) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
     .update({ sub_status })
@@ -92,8 +113,10 @@ export const updateSubStatus = async (rowId: number, sub_status: string) => {
   return data
 }
 
-// 🆕 Update assigned user (followup)
-export const updateAssignedUser = async (rowId: number, assigned: string) => {
+export const updateAssignedUser = async (
+  rowId: number,
+  assigned: string | null
+) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
     .update({ assigned })
@@ -103,7 +126,19 @@ export const updateAssignedUser = async (rowId: number, assigned: string) => {
   return data
 }
 
-// 🆕 Save comment for a row
+export const updateLastActor = async (
+  rowId: number,
+  last_actor: string | null
+) => {
+  const { data, error } = await supabaseCustomer
+    .from("filing_year")
+    .update({ last_actor })
+    .eq("filingYearId", rowId)
+
+  if (error) throw error
+  return data
+}
+
 export const saveComment = async (
   rowId: number,
   comment: string,
@@ -118,8 +153,10 @@ export const saveComment = async (
     if (error) throw error
     return data
   }
+
   const timestamp = new Date().toLocaleString()
   const updatedComment = `${comment}\n\nUpdated by ${updatedBy} at ${timestamp}`
+
   const { data, error } = await supabaseCustomer
     .from("filing_year")
     .update({ comments: updatedComment })
@@ -129,10 +166,8 @@ export const saveComment = async (
   return data
 }
 
-// Update the generateCustomerLoginLink function:
 export const generateCustomerLoginLink = async (email: string) => {
   try {
-    // Call API route instead of direct admin call
     const response = await fetch("/api/generate-magic-link", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -140,25 +175,20 @@ export const generateCustomerLoginLink = async (email: string) => {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Failed to generate link")
+      const errorJson = await response.json()
+      throw new Error(
+        (errorJson as { message?: string }).message ||
+        "Failed to generate link"
+      )
     }
 
-    const { magicLink } = await response.json()
-    return magicLink
-  } catch (err: any) {
-    console.error("Error generating magic link:", err.message)
+    const parsed = (await response.json()) as { magicLink?: string }
+    return parsed.magicLink
+  } catch (err: unknown) {
+    console.error(
+      "Error generating magic link:",
+      err instanceof Error ? err.message : err
+    )
     throw new Error("Failed to create temporary login link")
   }
-}
-
-// 🆕 Update last actor
-export const updateLastActor = async (rowId: number, last_actor: string) => {
-  const { data, error } = await supabaseCustomer
-    .from("filing_year")
-    .update({ last_actor })
-    .eq("filingYearId", rowId)
-
-  if (error) throw error
-  return data
 }

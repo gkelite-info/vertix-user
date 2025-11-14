@@ -17,7 +17,6 @@ export const getAllPreRegisterClients = async (
   return { data, totalCount: count ?? 0 }
 }
 
-// Update status for a row
 export const updateStatus = async (rowId: number, status: string) => {
   const { data, error } = await supabaseCustomer
     .from("referrals")
@@ -28,7 +27,6 @@ export const updateStatus = async (rowId: number, status: string) => {
   return data
 }
 
-// Update followup for a row
 export const updateFollowup = async (rowId: number, followup: string) => {
   const { data, error } = await supabaseCustomer
     .from("referrals")
@@ -39,7 +37,6 @@ export const updateFollowup = async (rowId: number, followup: string) => {
   return data
 }
 
-// Save comment for a row
 export const saveComment = async (
   rowId: number,
   comment: string,
@@ -56,7 +53,6 @@ export const saveComment = async (
   return data
 }
 
-//get followup users data
 export const getFollowupUsersData = async () => {
   const { data, error } = await supabase.from("vertixusers").select("name")
   if (error) throw error

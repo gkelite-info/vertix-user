@@ -50,7 +50,6 @@ const PreRegisterClient = () => {
   const [isLoadingPreClients, setIsLoadingPreClients] = useState<boolean>(true)
   const [totalCount, setTotalCount] = useState(0)
 
-  // 🔵 Helper: single reusable fetch method for clients
   const fetchClients = async (page = 1) => {
     try {
       setIsLoadingPreClients(true)
@@ -79,7 +78,6 @@ const PreRegisterClient = () => {
     getFollowupUsers()
   }, [currentPage])
 
-  // 🔵 UPDATED: after status update, re-fetch fresh API data instead of manual state change
   const handleStatusChange = async (
     row: PreRegisterClientType,
     value: string
@@ -87,13 +85,12 @@ const PreRegisterClient = () => {
     try {
       await updateStatus(row.referId, value)
       toast.success("Status updated successfully")
-      await fetchClients(currentPage) // 🔵 refresh after update
+      await fetchClients(currentPage)
     } catch (err: any) {
       toast.error(err?.message || "Failed to update status. Please try again")
     }
   }
 
-  // 🔵 UPDATED: same for followup — no local state mutation
   const handleFollowupChange = async (
     row: PreRegisterClientType,
     value: string
@@ -101,13 +98,12 @@ const PreRegisterClient = () => {
     try {
       await updateFollowup(row.referId, value)
       toast.success("Followup updated successfully")
-      await fetchClients(currentPage) // 🔵 refresh after update
+      await fetchClients(currentPage)
     } catch (err: any) {
       toast.error(err?.message || "Failed to update followup. Please try again")
     }
   }
 
-  // 🔵 UPDATED: after saving comment, fetch updated data
   const handleCommentSave = async (comment: string) => {
     if (!currentCommentRow) return
     try {
@@ -120,13 +116,12 @@ const PreRegisterClient = () => {
       await saveComment(currentCommentRow.referId, comment, updatedBy)
       toast.success("Comment updated successfully")
       setModalOpen(false)
-      await fetchClients(currentPage) // 🔵 refresh data
+      await fetchClients(currentPage)
     } catch (err: any) {
       toast.error(err?.message || "Failed to update comment. Please try again")
     }
   }
 
-  // ✅ Table columns (same)
   const columns: TableColumn<PreRegisterClientType>[] = [
     { name: "S.No", render: (row) => row.referId },
     { name: "First Name", render: (row) => row.firstName },

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { getUser } from "@/app/api/supabaseApi/userApi"
 import { useEffect, useRef, useState } from "react"
@@ -15,7 +14,7 @@ export default function Header() {
   const hasFetchedUser = useRef(false)
   const fetchUser = async () => {
     try {
-      if (hasFetchedUser.current) return // 🟢 Prevent duplicate calls
+      if (hasFetchedUser.current) return
       hasFetchedUser.current = true
       const appUser = await getUser()
       setUserName(appUser?.name)
@@ -41,25 +40,28 @@ export default function Header() {
     )
 
     return () => {
-      listener.subscription.unsubscribe() // 🟢 Correct cleanup
+      listener.subscription.unsubscribe()
     }
   }, [])
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      setIsLogoutModalOpen(false)
-      toast.success("Logged out successfully")
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
 
-      localStorage.removeItem("sb-support-auth")
-      localStorage.removeItem("token")
-      router.push("/login")
-    } catch (err: any) {
-      console.error("Logout error:", err)
-      toast.error(err?.message || "Error logging out. Please try again.")
-    }
+    setIsLogoutModalOpen(false)
+    toast.success("Logged out successfully")
+
+    localStorage.removeItem("sb-support-auth")
+    localStorage.removeItem("token")
+    router.push("/login")
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Error logging out. Please try again."
+    console.error("Logout error:", err)
+    toast.error(errorMsg)
   }
+}
+
 
   return (
     <>

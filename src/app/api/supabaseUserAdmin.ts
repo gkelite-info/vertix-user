@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
 
-// ✅ Server-only client for Admin APIs
 if (typeof window !== "undefined") {
   throw new Error("supabaseAdmin can only be used on the server")
 }

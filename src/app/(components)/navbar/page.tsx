@@ -68,7 +68,6 @@ function NavbarContent() {
               });
               return newItems;
             } else {
-              // fallback: append at end if admin portal not found
               return [...prev, { label: "Create Admin", href: "/create-admin" }];
             }
           });

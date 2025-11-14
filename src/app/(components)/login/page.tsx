@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { useAuth } from "../AuthContext"
 import { Icon } from "@iconify/react/dist/iconify.js"
@@ -15,16 +14,15 @@ function Page() {
   const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
-  //const [error, setError] = useState("")
   const [remember, setRemember] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  //   const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const handleEmailChange = (e: { target: { value: string } }) => {
     const value = e.target.value
     setEmail(value)
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    const emailRegex =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
     if (!emailRegex.test(value)) {
       setEmailError("Please enter a valid email address")
@@ -32,6 +30,7 @@ function Page() {
       setEmailError("")
     }
   }
+
   const handlePasswordChange = (e: { target: { value: string } }) => {
     const value = e.target.value
     setPassword(value)
@@ -48,8 +47,8 @@ function Page() {
   const handleLogin = async () => {
     try {
       setIsSubmitted(true)
+
       if (!email) {
-        //setError("Email required to login")
         toast.error("Email is required.")
         return
       } else if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -58,17 +57,12 @@ function Page() {
       }
 
       if (!password) {
-        //setError("Password is incorrect, please check")
         toast.error("Password is required.")
         return
       } else if (password.length < 6) {
         toast.error("Password must be at least 6 characters.")
         return
       }
-      // const res = await axios.post("http://localhost:5000/api/v1/user/login", {
-      //   email,
-      //   password,
-      // })
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -85,12 +79,15 @@ function Page() {
         router.push("/view-clients")
         setTimeout(() => toast.success("Login successful"), 1000)
       }
-
-      // login(data.token)
-    } catch (error: any) {
-      //setError("Invalid credentials")
+    } catch (error: unknown) {
       console.log("login error", error)
-      toast.error("An unexpected error occurred. Please try again.")
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred. Please try again."
+
+      toast.error(message)
       return
     } finally {
       setIsSubmitted(false)
@@ -183,15 +180,8 @@ function Page() {
                     {isSubmitted ? "Loading..." : "Login"}
                   </button>
                   <div className="flex lg:gap-2 items-end justify-center lg:h-[35%] lg:w-[80%]">
-                    {/* <h5 className="font-medium text-[#979797] text-sm lg:w-[50%]">Don't have an account ? </h5> */}
-                    {/* <p className="font-medium text-sm text-black border lg:w-[27%] border-b-1 border-l-0 border-r-0 border-t-0 cursor-pointer">Register Now</p> */}
                   </div>
                 </div>
-                {/* {error && (
-                  <p className="text-red-500 text-center mt-2 text-sm">
-                    {error}
-                  </p>
-                )} */}
               </div>
             </div>
           </div>

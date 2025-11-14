@@ -1,4 +1,3 @@
-// ✅ Prevent static rendering issues
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"

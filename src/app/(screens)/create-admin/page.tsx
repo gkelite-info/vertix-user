@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useRouter } from "next/navigation"
@@ -6,8 +5,6 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Icon } from "@iconify/react"
 import { getUser, insertUser } from "@/app/api/supabaseApi/userApi"
-// import { supabase } from "../../../../utils/supabase/client"
-// import { insertCustomer } from "@/app/api/SupabaseAPI/customer/customerApi"
 
 export default function CreateAdmin() {
   const router = useRouter()
@@ -35,8 +32,7 @@ export default function CreateAdmin() {
   useEffect(() => {
     const getUserData = async () => {
       try {
-        // Replace this with your real user fetch logic
-        const res = await getUser() // Example API
+        const res = await getUser()
         const userRole = res?.role
 
         if (userRole !== "super_admin") {
@@ -122,9 +118,13 @@ export default function CreateAdmin() {
       })
       setPhone("")
       setPhoneCode("")
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      toast.error(err?.message || "Failed to create user")
+
+      const message =
+        err instanceof Error ? err.message : "Failed to create user"
+
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }

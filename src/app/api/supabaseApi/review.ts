@@ -1,5 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
+
+type FilingYearRow = {
+  customer?: {
+    firstname?: string
+    lastname?: string
+    timezone?: string
+    email?: string
+  }
+  [key: string]: unknown
+}
 
 export const getAllRegisteredClientsReviews = async (
   role?: string,
@@ -20,19 +29,20 @@ export const getAllRegisteredClientsReviews = async (
       `,
       { count: "exact" }
     )
+
     query = query.eq("status", "Review Pending")
     query = query.or(
       'sub_status.is.null,and(sub_status.neq."Not Interested",sub_status.neq."Already Filed")'
     )
-    // Filter by assigned admin
+
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
+
     if (assignedFilter) {
       query = query.eq("assigned", assignedFilter)
     }
 
-    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 
@@ -44,17 +54,28 @@ export const getAllRegisteredClientsReviews = async (
 
     return {
       data:
-        data?.map((row: any) => ({
-          ...row,
+        data?.map((row) => ({
+          filingYearId: row.filingYearId,
+          customerId: row.customerId,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
-          email: row.customer?.email ?? "",
+          status: row.status ?? "",
+          sub_status: row.sub_status ?? "",
+          last_actor: row.last_actor ?? "",
+          action: row.action ?? "",
+          comments: row.comments ?? "",
+          assigned: row.assigned ?? "",
+          updatedAt: row.updatedAt ?? "",
         })) ?? [],
       totalCount: count ?? 0,
     }
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message)
+
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
     return { data: [], totalCount: 0 }
   }
 }

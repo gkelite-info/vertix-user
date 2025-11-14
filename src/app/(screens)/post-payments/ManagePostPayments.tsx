@@ -111,7 +111,7 @@ const ManagePostPayments = () => {
     fetchUser()
   }, [])
 
-  const fetchClients = useCallback(
+  const fetchClients = useCallback( 
     async (showLoader = true) => {
       if (!userRole) return
 

@@ -1,5 +1,42 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
+
+type Customer = {
+  customerId: string
+  firstname: string
+  lastname: string
+  email: string
+  phone: string
+  dob: string
+  occupation: string
+  country: string
+}
+
+type VertixCustomer = {
+  customerId?: string
+  customerid?: string
+  firstname?: string
+  lastname?: string
+  email?: string
+  phone?: string
+  dob?: string
+  date_of_birth?: string
+  occupation?: string
+  job?: string
+  country?: string
+  residence_country?: string
+  updatedAt?: string
+  [key: string]: unknown
+}
+
+type VertixUser = {
+  userId: string
+  firstname: string
+  lastname: string
+  email: string
+  phone: string
+  createdAt: string
+  [key: string]: unknown
+}
 
 export const getAllCustomers = async (
   search?: string,
@@ -13,48 +50,57 @@ export const getAllCustomers = async (
     const baseQuery = supabaseCustomer
       .from("vertixcustomers")
       .select("*", { count: "exact" })
-      .order("updatedAt", { ascending: false }) // newest records first
+      .order("updatedAt", { ascending: false })
+
+    const process = (rows: VertixCustomer[]): Customer[] =>
+      rows.map((row) => ({
+        customerId: row.customerId ?? row.customerid ?? "",
+        firstname: row.firstname ?? "",
+        lastname: row.lastname ?? "",
+        email: row.email ?? "",
+        phone: row.phone ?? "",
+        dob: row.dob ?? row.date_of_birth ?? "",
+        occupation: row.occupation ?? row.job ?? "",
+        country: row.country ?? row.residence_country ?? "",
+      }))
 
     if (!search || !search.trim()) {
       const { data, error, count } = await baseQuery.range(from, to)
       if (error) throw new Error(error.message)
-      return { data: data || [], count: count || 0 }
+      return {
+        data: process((data as VertixCustomer[]) || []),
+        count: count || 0,
+      }
     }
 
     const searchTerm = search.trim().toLowerCase()
     const parts = searchTerm.split(" ").filter(Boolean)
 
-    // MARKED CHANGE: Return no results if more than two words typed
-    if (parts.length > 2) {
-      return { data: [], count: 0 }
-    }
+    if (parts.length > 2) return { data: [], count: 0 }
 
     const first = parts[0] || ""
     const last = parts[1] || ""
 
     if (first && last) {
-      // Combined first + last name search with pagination on first name
-      const { data, error, count } = await supabaseCustomer
+      const { data, error } = await supabaseCustomer
         .from("vertixcustomers")
         .select("*", { count: "exact" })
         .ilike("firstname", `%${first}%`)
-        .range(from, to)
         .order("updatedAt", { ascending: false })
+        .range(from, to)
 
       if (error) throw new Error(error.message)
 
-      // Local filter for combined first and last name match
       const filtered =
-        data?.filter(
+        (data as VertixCustomer[])?.filter(
           (row) =>
             row.firstname?.toLowerCase().includes(first) &&
             row.lastname?.toLowerCase().includes(last)
         ) || []
 
-      return { data: filtered, count: filtered.length }
+      return { data: process(filtered), count: filtered.length }
     }
 
-    // Single word search term (or only one word provided)
     const term = first
 
     const { data, error, count } = await baseQuery
@@ -65,16 +111,21 @@ export const getAllCustomers = async (
 
     if (error) throw new Error(error.message)
 
-    return { data: data || [], count: count || 0 }
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message)
+    return {
+      data: process((data as VertixCustomer[]) || []),
+      count: count || 0,
+    }
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
     return { data: [], count: 0 }
   }
 }
 
 export const getUser = async () => {
   try {
-    // 1️⃣ Get Supabase Auth User
     const {
       data: { user },
       error: authError,
@@ -82,7 +133,6 @@ export const getUser = async () => {
 
     if (authError || !user) throw new Error("Not authenticated")
 
-    // 2️⃣ Get App User from your table (vertixusers)
     const { data: appUser, error } = await supabase
       .from("vertixusers")
       .select("*")
@@ -91,13 +141,15 @@ export const getUser = async () => {
 
     if (error) throw error
     return appUser
-  } catch (error: any) {
-    console.error("Error fetching customer:", error.message)
-    throw error
+  } catch (err: unknown) {
+    console.error(
+      "Error fetching customer:",
+      err instanceof Error ? err.message : err
+    )
+    throw err
   }
 }
 
-// ✅ InsertUser helper function
 export const insertUser = async (userData: {
   firstname: string
   lastname: string
@@ -111,7 +163,45 @@ export const insertUser = async (userData: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   })
-  const data = await res.json()
+
+  const data = (await res.json()) as { error?: string }
+
   if (!res.ok) throw new Error(data.error || "Failed to create user")
+
   return true
+}
+
+export const getAllUsers = async (
+  page: number = 1,
+  pageSize: number = 25
+) => {
+  try {
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+
+    const { data, error, count } = await supabase
+      .from("vertixusers")
+      .select("*", { count: "exact" })
+      .eq("is_deleted", false)
+      .order("updatedAt", { ascending: false })
+      .range(from, to)
+
+    if (error) throw new Error(error.message)
+
+    const mapped = (data as VertixUser[]).map((u) => ({
+      id: u.userId,
+      email: u.email,
+      full_name: `${u.firstname} ${u.lastname}`,
+      phone: u.phone,
+      created_at: u.createdAt,
+    }))
+
+    return { data: mapped, count: count || 0 }
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
+    return { data: [], count: 0 }
+  }
 }

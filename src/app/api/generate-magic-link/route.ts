@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "../supabaseAdmin"
 
@@ -29,10 +28,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       magicLink: data?.properties?.action_link,
     })
-  } catch (error: any) {
-    console.error("Magic link generation error:", error)
+  } catch (error: unknown) {
+    console.error(
+      "Magic link generation error:",
+      error instanceof Error ? error.message : error
+    )
+
     return NextResponse.json(
-      { message: error.message || "Failed to generate magic link" },
+      {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate magic link",
+      },
       { status: 500 }
     )
   }

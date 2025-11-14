@@ -31,7 +31,6 @@ function TableItem<T>({
               : "whitespace-nowrap"
           }`}
         >
-          {/* {column.render ? column.render(row) : "-"} */}
           {column.name === "S.No"
             ? (currentPage - 1) * pageSize + rowIndex + 1
             : column.render

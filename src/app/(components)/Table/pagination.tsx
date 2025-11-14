@@ -1,9 +1,9 @@
 import React from "react"
 
 type Props = {
-  totalItems: number // total number of items from API
+  totalItems: number
   currentPage: number
-  pageSize?: number // items per page, default 10
+  pageSize?: number
   onPageChange: (page: number) => void
 }
 
@@ -25,10 +25,8 @@ export default function Pagination({
 
   return (
     <div className="flex justify-between items-center mt-3">
-      {/* Left side: showing item count */}
       <span>{`${startItem}-${endItem} of ${totalItems} items`}</span>
 
-      {/* Right side: page buttons */}
       <div className="flex gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
