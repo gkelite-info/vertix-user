@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -101,11 +102,14 @@ const ManageClient = () => {
     [userRole, userName, currentPage, assignedFilter]
   )
 
+  // 🆕 CHANGE: trigger fetchClients when deps are ready/changed
   useEffect(() => {
+    // wait until userRole is available (set by getUser effect)
     if (!userRole) return
     fetchClients(true)
   }, [fetchClients, userRole, userName, currentPage])
 
+  // Fetch assigned users once
   useEffect(() => {
     const getAssignedUsers = async () => {
       try {
@@ -132,11 +136,13 @@ const ManageClient = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // 🆕 CHANGE: On update APIs, call server then refresh list via fetchClients()
   const handleStatusChange = async (row: ManageTaxType, value: string) => {
     try {
-      setIsClientsDataLoading(true)
+      setIsClientsDataLoading(true) // show loader while updating + refetching
       await updateStatus(row.filingYearId, value)
-      await fetchClients(false)
+      // Re-fetch from API to ensure filters are applied (e.g. Tax Org Pending removed from current tab)
+      await fetchClients(false) // false => we already set loader manually
       toast.success("Status updated successfully")
     } catch (err: any) {
       toast.error(err?.message || "Failed to update status")
@@ -171,10 +177,12 @@ const ManageClient = () => {
     }
   }
 
+  // 🆕 CHANGE: save comment then refetch (so updated comments appear and filtering is consistent)
   const handleCommentSave = async (comment: string) => {
     if (!currentCommentRow) return
     try {
       setIsClientsDataLoading(true)
+      // prefer to use userName from state if available (avoids extra getUser call)
       const updatedBy = userName || (await getUser())?.name || "Unknown"
       await saveComment(currentCommentRow.filingYearId, comment, updatedBy)
       await fetchClients(false)
@@ -210,6 +218,7 @@ const ManageClient = () => {
       ),
     },
     {
+      // 🆕 CHANGE: Auto-login to customer portal via Supabase magic link
       name: "Action",
       render: (row) => (
         <button
@@ -217,6 +226,7 @@ const ManageClient = () => {
             try {
               toast.loading("Generating secure login link...", { id: "taxorg" })
 
+              // 🆕 Fetch the customer's email from your data (already joined in query)
               const customerEmail =
                 (row as any)?.customer?.email || (row as any)?.email
               if (!customerEmail) {
@@ -224,6 +234,7 @@ const ManageClient = () => {
                 return
               }
 
+              // 🆕 Dynamically import helper to avoid bundling service key
               const { generateCustomerLoginLink } = await import(
                 "@/app/api/supabaseApi/tax-organizer"
               )
@@ -297,29 +308,31 @@ const ManageClient = () => {
               Assigned To
               <FaFilter
                 className={`cursor-pointer transition-colors duration-150 ${showAssignedDropdown ? "text-white" : "text-white" // 🆕 CHANGE: darker gray default
-                  } hover:text-white`}
+                  } hover:text-white`} // 🆕 CHANGE: clearer hover
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowAssignedDropdown((prev) => !prev)
                 }}
               />
+              {/* 🆕 FIX: Dropdown now opens below the icon with proper z-index */}
               {showAssignedDropdown && (
                 <div
                   className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  // 🆕 FIX: Added zIndex, overscrollBehavior, pointer-events
                   style={{
-                    position: "absolute",
-                    zIndex: 100,
-                    overscrollBehavior: "contain",
+                    position: "absolute", // --- Reinforce positioning for dropdown
+                    zIndex: 100, // --- Ensures dropdown appears above table
+                    overscrollBehavior: "contain", // --- Prevents table from scrolling
                     scrollbarWidth: "thin",
                     scrollbarColor: "#9CA3AF #F3F4F6",
                   }}
-                  onWheel={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
+                  onWheel={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent scroll on mousewheel
+                  onClick={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent click capture
                 >
                   <div
                     className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${assignedFilter === ""
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-800"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-800"
                       }`}
                     onClick={() => {
                       setAssignedFilter("")
@@ -332,8 +345,8 @@ const ManageClient = () => {
                     <div
                       key={user}
                       className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${assignedFilter === user
-                        ? "bg-blue-50 text-blue-700 font-medium"
-                        : "text-gray-800"
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-800"
                         }`}
                       onClick={() => {
                         setAssignedFilter(user)

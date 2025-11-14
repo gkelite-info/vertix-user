@@ -1,14 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
-
-type FilingYearRow = {
-  customer?: {
-    firstname?: string
-    lastname?: string
-    timezone?: string
-    email?: string
-  }
-  [key: string]: unknown
-}
 
 export const getAllManageClients = async (
   role?: string,
@@ -29,19 +20,18 @@ export const getAllManageClients = async (
       `,
       { count: "exact" }
     )
-
     query = query.or(
       'status.in.("Not Interested","Already Filed"),sub_status.in.("Not Interested","Already Filed")'
     )
-
+    // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
-
     if (assignedFilter) {
       query = query.eq("assigned", assignedFilter)
     }
 
+    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 
@@ -54,25 +44,16 @@ export const getAllManageClients = async (
     return {
       data:
         data?.map((row: any) => ({
-          filingYearId: row.filingYearId,
-          customerId: row.customerId,
+          ...row,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
-          status: row.status ?? "",
-          sub_status: row.sub_status ?? "",
-          action: row.action ?? "",
-          comments: row.comments ?? "",
-          assigned: row.assigned ?? "",
-          updatedAt: row.updatedAt ?? "",
+          email: row.customer?.email ?? "",
         })) ?? [],
       totalCount: count ?? 0,
     }
-  } catch (err: unknown) {
-    console.error(
-      "Supabase fetch error:",
-      err instanceof Error ? err.message : err
-    )
+  } catch (err: any) {
+    console.error("Supabase fetch error:", err.message)
     return { data: [], totalCount: 0 }
   }
 }
