@@ -53,12 +53,18 @@ export const getAllManageClients = async (
 
     return {
       data:
-        data?.map((row: FilingYearRow) => ({
-          ...row,
+        data?.map((row: any) => ({
+          filingYearId: row.filingYearId,
+          customerId: row.customerId,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
-          email: row.customer?.email ?? "",
+          status: row.status ?? "",
+          sub_status: row.sub_status ?? "",
+          action: row.action ?? "",
+          comments: row.comments ?? "",
+          assigned: row.assigned ?? "",
+          updatedAt: row.updatedAt ?? "",
         })) ?? [],
       totalCount: count ?? 0,
     }
