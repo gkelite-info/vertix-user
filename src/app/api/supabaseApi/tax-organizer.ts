@@ -64,15 +64,23 @@ export const getAllRegisteredClients = async (
 
     return {
       data:
-        data?.map((row: FilingYearRow) => ({
-          ...row,
+        data?.map((row) => ({
+          filingYearId: row.filingYearId,
+          customerId: row.customerId,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
-          email: row.customer?.email ?? "",
+          status: row.status ?? "",
+          sub_status: row.sub_status ?? "",
+          last_actor: row.last_actor ?? "",
+          action: row.action ?? "",
+          comments: row.comments ?? "",
+          assigned: row.assigned ?? "",
+          updatedAt: row.updatedAt ?? "",
         })) ?? [],
-      totalCount: count ?? 0,
+      totalCount: count ?? 0,   // ✅ FIXED
     }
+
   } catch (err: unknown) {
     console.error(
       "Supabase fetch error:",
@@ -170,7 +178,7 @@ export const generateCustomerLoginLink = async (email: string) => {
       const errorJson = await response.json()
       throw new Error(
         (errorJson as { message?: string }).message ||
-          "Failed to generate link"
+        "Failed to generate link"
       )
     }
 
