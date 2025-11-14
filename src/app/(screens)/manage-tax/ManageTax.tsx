@@ -328,14 +328,17 @@ const ManageTax = () => {
     },
     {
       name: "Action",
-      render: (row) => (
+      render: (row: ManageTaxType) => (
         <button
           onClick={async () => {
             try {
               toast.loading("Generating secure login link...", { id: "taxorg" })
 
               const customerEmail =
-                (row as any)?.customer?.email || (row as any)?.email
+                (row as unknown as { customer?: { email?: string }, email?: string })
+                  .customer?.email ??
+                (row as unknown as { email?: string }).email
+
               if (!customerEmail) {
                 toast.error("Customer email not found", { id: "taxorg" })
                 return
@@ -348,15 +351,13 @@ const ManageTax = () => {
               const magicLink = await generateCustomerLoginLink(customerEmail)
               if (!magicLink) throw new Error("Failed to generate login link")
 
-              toast.success("Redirecting to customer portal...", {
-                id: "taxorg",
-              })
+              toast.success("Redirecting to customer portal...", { id: "taxorg" })
               window.open(magicLink, "_blank")
-            } catch (err: any) {
-              console.error("Error opening Tax Organizer:", err)
-              toast.error(err?.message || "Failed to open customer portal", {
-                id: "taxorg",
-              })
+            } catch (err: unknown) {
+              const message =
+                err instanceof Error ? err.message : "Failed to open customer portal"
+
+              toast.error(message, { id: "taxorg" })
             }
           }}
           className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
@@ -365,6 +366,7 @@ const ManageTax = () => {
         </button>
       ),
     },
+
 
     {
       name: "Sub Status",
