@@ -78,7 +78,10 @@ export const updateStatus = async (rowId: number, status: string) => {
   return data
 }
 
-export const updateSubStatus = async (rowId: number, sub_status: string) => {
+export const updateSubStatus = async (
+  rowId: number,
+  sub_status: string | null
+) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
     .update({ sub_status })
@@ -88,7 +91,10 @@ export const updateSubStatus = async (rowId: number, sub_status: string) => {
   return data
 }
 
-export const updateAssignedUser = async (rowId: number, assigned: string) => {
+export const updateAssignedUser = async (
+  rowId: number,
+  assigned: string | null
+) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
     .update({ assigned })
@@ -97,6 +103,20 @@ export const updateAssignedUser = async (rowId: number, assigned: string) => {
   if (error) throw error
   return data
 }
+
+export const updateLastActor = async (
+  rowId: number,
+  last_actor: string | null
+) => {
+  const { data, error } = await supabaseCustomer
+    .from("filing_year")
+    .update({ last_actor })
+    .eq("filingYearId", rowId)
+
+  if (error) throw error
+  return data
+}
+
 
 export const saveComment = async (
   rowId: number,
@@ -142,14 +162,4 @@ export const generateCustomerLoginLink = async (email: string) => {
     console.error("Error generating magic link:", err.message)
     throw new Error("Failed to create temporary login link")
   }
-}
-
-export const updateLastActor = async (rowId: number, last_actor: string) => {
-  const { data, error } = await supabaseCustomer
-    .from("filing_year")
-    .update({ last_actor })
-    .eq("filingYearId", rowId)
-
-  if (error) throw error
-  return data
 }
