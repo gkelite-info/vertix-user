@@ -9,7 +9,7 @@ import { getUser, insertUser } from "@/app/api/supabaseApi/userApi"
 // import { supabase } from "../../../../utils/supabase/client"
 // import { insertCustomer } from "@/app/api/SupabaseAPI/customer/customerApi"
 
-export default function CreateUser() {
+export default function CreateAdmin() {
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -19,7 +19,6 @@ export default function CreateUser() {
     phone: "",
     password: "",
     confirmPassword: "",
-    // ✅ added role field
     role: "admin",
   })
   const [, setEmail] = useState("")
@@ -31,7 +30,6 @@ export default function CreateUser() {
   const [phone, setPhone] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  // ✅ Added: Role checking logic
   const [checkingRole, setCheckingRole] = useState(true)
 
   useEffect(() => {
@@ -54,7 +52,6 @@ export default function CreateUser() {
 
     getUserData()
   }, [router])
-  // ✅ End role check logic
 
   const handlePhoneCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
@@ -133,7 +130,6 @@ export default function CreateUser() {
     }
   }
 
-  // ✅ Show loading while role checking
   if (checkingRole) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -150,7 +146,6 @@ export default function CreateUser() {
         </h1>
 
         <div className="space-y-4">
-          {/* First & Last Name */}
           <div className="flex gap-3">
             <input
               id="firstname"
@@ -168,7 +163,6 @@ export default function CreateUser() {
             />
           </div>
 
-          {/* Email */}
           <div className="flex items-center border-b-2 border-gray-300">
             <Icon
               icon="line-md:email-filled"
@@ -183,7 +177,6 @@ export default function CreateUser() {
             />
           </div>
 
-          {/* Phone */}
           <div className="flex items-center border-b-2 border-gray-300 gap-3">
             <input
               type="text"
@@ -202,7 +195,6 @@ export default function CreateUser() {
             />
           </div>
 
-          {/* ✅ Role Dropdown */}
           <div className="flex flex-col">
             <label htmlFor="role" className="text-gray-600 text-sm mb-1">
               Select Role
@@ -217,9 +209,7 @@ export default function CreateUser() {
               <option value="super_admin">Super Admin</option>
             </select>
           </div>
-          {/* ✅ End role dropdown */}
 
-          {/* Password */}
           <div className="flex items-center border-b-2 border-gray-300">
             <Icon
               icon="weui:lock-filled"
@@ -240,7 +230,6 @@ export default function CreateUser() {
             />
           </div>
 
-          {/* Confirm Password */}
           <div className="flex items-center border-b-2 border-gray-300">
             <Icon
               icon="weui:lock-filled"
@@ -262,7 +251,6 @@ export default function CreateUser() {
             />
           </div>
 
-          {/* Remember Me */}
           <div className="flex items-center gap-2 mt-1">
             <input
               id="remember"
@@ -276,7 +264,6 @@ export default function CreateUser() {
             </label>
           </div>
 
-          {/* Buttons */}
           <div className="flex flex-col gap-3 items-center mt-3">
             <button
               type="button"
