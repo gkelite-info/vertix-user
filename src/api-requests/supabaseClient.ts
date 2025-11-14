@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -23,7 +23,7 @@ const tempStorage = {
   removeItem: (key: string) => sessionStorage.removeItem(`imp-${key}`),
 }
 
-export const supabaseCustomer = createClient(
+export const supabaseCustomer: SupabaseClient = createClient(
   supabaseCustomerUrl,
   supabaseCustomerAnonKey,
   {
@@ -40,11 +40,13 @@ export const supabaseCustomer = createClient(
 if (typeof window !== "undefined") {
   ;(async () => {
     try {
-      const auth: any = (supabaseCustomer as any).auth
+      const auth = (supabaseCustomer as SupabaseClient).auth
+
       await new Promise((r) => setTimeout(r, 50))
 
-      if (auth._bc) auth._bc.close()
-      auth._bc = {
+      if ((auth as any)._bc) (auth as any)._bc.close()
+
+      ;(auth as any)._bc = {
         postMessage: () => {},
         addEventListener: () => {},
         removeEventListener: () => {},
