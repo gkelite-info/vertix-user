@@ -39,12 +39,12 @@ export default function Dashboard() {
     { name: "Phone", render: (row) => row.phone },
     {
       name: "Date of Birth",
-
       render: (row) => formatDateMMDDYYYY(row.dob),
     },
     { name: "Occupation", render: (row) => row.occupation },
     { name: "Country", render: (row) => row.country },
   ]
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search)
@@ -58,18 +58,28 @@ export default function Dashboard() {
     if (isFirstRender.current) {
       isFirstRender.current = false
     }
+
     const fetchUsers = async () => {
       try {
         setIsLoading(true)
-        const res = await getAllCustomers(debouncedSearch, currentPage, PAGE_SIZE)
+        const res = await getAllCustomers(
+          debouncedSearch,
+          currentPage,
+          PAGE_SIZE
+        )
         setData(res.data)
         setTotalCount(res.count)
-      } catch (error: any) {
-        toast.error(error.message || "Failed to fetch clients")
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch clients"
+        toast.error(message)
       } finally {
         setIsLoading(false)
       }
     }
+
     if (debouncedSearch.trim().length > 0) {
       fetchUsers()
     } else {
@@ -83,6 +93,7 @@ export default function Dashboard() {
   }
 
   return (
+
     <>
       <div className="bg-[#EBEBEB] flex  items-center w-full flex-col h-[100%]">
         <div className="flex items-center bg-[#1D2B48] rounded-full px-3 py-2.5 w-[60%] max-w-3xl">

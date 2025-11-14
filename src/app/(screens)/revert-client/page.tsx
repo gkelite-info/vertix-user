@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -317,8 +318,8 @@ const ManageClient = () => {
                 >
                   <div
                     className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${assignedFilter === ""
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-800"
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-800"
                       }`}
                     onClick={() => {
                       setAssignedFilter("")
@@ -331,8 +332,8 @@ const ManageClient = () => {
                     <div
                       key={user}
                       className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${assignedFilter === user
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : "text-gray-800"
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "text-gray-800"
                         }`}
                       onClick={() => {
                         setAssignedFilter(user)
