@@ -1,4 +1,15 @@
 import { supabaseCustomer } from "@/api-requests/supabaseClient"
+
+type FilingYearRow = {
+  customer?: {
+    firstname?: string
+    lastname?: string
+    timezone?: string
+    email?: string
+  }
+  [key: string]: unknown
+}
+
 export const getAllRegisteredClientsPostPayments = async (
   role?: string,
   userName?: string,
@@ -20,10 +31,10 @@ export const getAllRegisteredClientsPostPayments = async (
       { count: "exact" }
     )
 
-    // Filter by assigned admin
     if (role === "admin" && userName) {
       query = query.eq("assigned", userName)
     }
+
     if (assignedFilter) {
       query = query.eq("assigned", assignedFilter)
     }
@@ -55,7 +66,6 @@ export const getAllRegisteredClientsPostPayments = async (
         )
     }
 
-    // 🧩 Pagination (server-side)
     const from = (page - 1) * pageSize
     const to = from + pageSize - 1
 
@@ -67,7 +77,7 @@ export const getAllRegisteredClientsPostPayments = async (
 
     return {
       data:
-        data?.map((row: any) => ({
+        data?.map((row: FilingYearRow) => ({
           ...row,
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
@@ -76,8 +86,11 @@ export const getAllRegisteredClientsPostPayments = async (
         })) ?? [],
       totalCount: count ?? 0,
     }
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message)
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
     return { data: [], totalCount: 0 }
   }
 }

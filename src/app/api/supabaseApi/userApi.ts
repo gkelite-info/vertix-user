@@ -1,5 +1,27 @@
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
 
+type VertixCustomer = {
+  firstname?: string
+  lastname?: string
+  email?: string
+  phone?: string
+  dob?: string
+  occupation?: string
+  country?: string
+  updatedAt?: string
+  [key: string]: unknown
+}
+
+type VertixUser = {
+  userId: string
+  firstname: string
+  lastname: string
+  email: string
+  phone: string
+  createdAt: string
+  [key: string]: unknown
+}
+
 export const getAllCustomers = async (
   search?: string,
   page: number = 1,
@@ -17,31 +39,29 @@ export const getAllCustomers = async (
     if (!search || !search.trim()) {
       const { data, error, count } = await baseQuery.range(from, to)
       if (error) throw new Error(error.message)
-      return { data: data || [], count: count || 0 }
+      return { data: (data as VertixCustomer[]) || [], count: count || 0 }
     }
 
     const searchTerm = search.trim().toLowerCase()
     const parts = searchTerm.split(" ").filter(Boolean)
 
-    if (parts.length > 2) {
-      return { data: [], count: 0 }
-    }
+    if (parts.length > 2) return { data: [], count: 0 }
 
     const first = parts[0] || ""
     const last = parts[1] || ""
 
     if (first && last) {
-      const { data, error, count } = await supabaseCustomer
+      const { data, error } = await supabaseCustomer
         .from("vertixcustomers")
         .select("*", { count: "exact" })
         .ilike("firstname", `%${first}%`)
-        .range(from, to)
         .order("updatedAt", { ascending: false })
+        .range(from, to)
 
       if (error) throw new Error(error.message)
 
       const filtered =
-        data?.filter(
+        (data as VertixCustomer[])?.filter(
           (row) =>
             row.firstname?.toLowerCase().includes(first) &&
             row.lastname?.toLowerCase().includes(last)
@@ -60,9 +80,12 @@ export const getAllCustomers = async (
 
     if (error) throw new Error(error.message)
 
-    return { data: data || [], count: count || 0 }
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message)
+    return { data: (data as VertixCustomer[]) || [], count: count || 0 }
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
     return { data: [], count: 0 }
   }
 }
@@ -84,9 +107,12 @@ export const getUser = async () => {
 
     if (error) throw error
     return appUser
-  } catch (error: any) {
-    console.error("Error fetching customer:", error.message)
-    throw error
+  } catch (err: unknown) {
+    console.error(
+      "Error fetching customer:",
+      err instanceof Error ? err.message : err
+    )
+    throw err
   }
 }
 
@@ -103,39 +129,45 @@ export const insertUser = async (userData: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   })
-  const data = await res.json()
+
+  const data = (await res.json()) as { error?: string }
+
   if (!res.ok) throw new Error(data.error || "Failed to create user")
+
   return true
 }
 
 export const getAllUsers = async (
   page: number = 1,
-  pageSize: number = 25,
+  pageSize: number = 25
 ) => {
   try {
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
 
     const { data, error, count } = await supabase
       .from("vertixusers")
       .select("*", { count: "exact" })
       .eq("is_deleted", false)
       .order("updatedAt", { ascending: false })
-      .range(from, to);
+      .range(from, to)
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(error.message)
 
-    const mapped = (data || []).map((u) => ({
+    const mapped = (data as VertixUser[]).map((u) => ({
       id: u.userId,
       email: u.email,
       full_name: `${u.firstname} ${u.lastname}`,
       phone: u.phone,
       created_at: u.createdAt,
-    }));
+    }))
 
-    return { data: mapped, count: count || 0 };
-  } catch (err: any) {
-    console.error("Supabase fetch error:", err.message);
-    return { data: [], count: 0 };
+    return { data: mapped, count: count || 0 }
+  } catch (err: unknown) {
+    console.error(
+      "Supabase fetch error:",
+      err instanceof Error ? err.message : err
+    )
+    return { data: [], count: 0 }
   }
-};
+}
