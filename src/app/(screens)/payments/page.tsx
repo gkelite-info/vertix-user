@@ -65,8 +65,7 @@ const PaymentPending = () => {
 
   const [userRole, setUserRole] = useState<string>("")
   const [userName, setUserName] = useState<string>("")
-  const [isClientsDataLoading, setIsClientsDataLoading] =
-    useState<boolean>(true)
+  const [isClientsDataLoading, setIsClientsDataLoading] = useState<boolean>(true)
   const [assignedFilter, setAssignedFilter] = useState<string>("")
   const [showAssignedDropdown, setShowAssignedDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -85,8 +84,8 @@ const PaymentPending = () => {
         const appUser = await getUser()
         setUserRole(appUser?.role || "")
         setUserName(appUser?.name || "")
-      } catch (error: any) {
-        toast.error(error?.message || "Failed to fetch user details")
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch user details")
       }
     }
     fetchUser()
@@ -98,18 +97,17 @@ const PaymentPending = () => {
 
       try {
         if (showLoader) setIsClientsDataLoading(true)
-        const { data, totalCount } =
-          await getAllRegisteredClientsPaymentPending(
-            userRole,
-            userName,
-            currentPage,
-            PAGE_SIZE,
-            assignedFilter
-          )
+        const { data, totalCount } = await getAllRegisteredClientsPaymentPending(
+          userRole,
+          userName,
+          currentPage,
+          PAGE_SIZE,
+          assignedFilter
+        )
         setData(data)
         setTotalCount(totalCount)
-      } catch (error: any) {
-        toast.error(error?.message || "Failed to fetch clients data")
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to fetch clients")
         setData([])
       } finally {
         if (showLoader) setIsClientsDataLoading(false)
@@ -127,10 +125,10 @@ const PaymentPending = () => {
     const getAssignedUsers = async () => {
       try {
         const data = await getFollowupUsersData()
-        const names = data.map((user: any) => user?.name)
+        const names = data.map((user: { name?: string }) => user?.name || "")
         setAssignedUsers(names)
-      } catch (error: any) {
-        toast.error(error?.message || "Failed to fetch assigned users.")
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to load users")
       }
     }
     getAssignedUsers()
@@ -138,10 +136,7 @@ const PaymentPending = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowAssignedDropdown(false)
       }
     }
@@ -154,31 +149,34 @@ const PaymentPending = () => {
       try {
         setIsClientsDataLoading(true)
         await updateStatus(row.filingYearId, value)
-        await updateLastActor(row.filingYearId, null as any)
-        await updateSubStatus(row.filingYearId, null as any)
-        await updateAssignedUser(row.filingYearId, null as any)
-        await saveComment(row.filingYearId, null as any)
+        await updateLastActor(row.filingYearId, null as unknown as string)
+        await updateSubStatus(row.filingYearId, null as unknown as string)
+        await updateAssignedUser(row.filingYearId, null as unknown as string)
+        await saveComment(row.filingYearId, "")
+
         await fetchClients(false)
         toast.success("Status updated successfully")
-      } catch (err: any) {
-        toast.error(err?.message || "Failed to update status")
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : "Failed to update")
       } finally {
         setIsClientsDataLoading(false)
       }
       return
     }
+
     if (["Not Interested", "Already Filed"].includes(value)) {
       setPendingAction({ type: "status", row, value })
       setConfirmModalOpen(true)
       return
     }
+
     try {
       setIsClientsDataLoading(true)
       await updateStatus(row.filingYearId, value)
       await fetchClients(false)
-      toast.success("Status updated successfully")
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update status")
+      toast.success("Status updated")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update")
     } finally {
       setIsClientsDataLoading(false)
     }
@@ -194,9 +192,9 @@ const PaymentPending = () => {
       setIsClientsDataLoading(true)
       await updateSubStatus(row.filingYearId, value)
       await fetchClients(false)
-      toast.success("Sub-Status updated successfully")
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update sub-status")
+      toast.success("Sub-status updated")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update sub-status")
     } finally {
       setIsClientsDataLoading(false)
     }
@@ -207,9 +205,9 @@ const PaymentPending = () => {
       setIsClientsDataLoading(true)
       await updateLastActor(row.filingYearId, value)
       await fetchClients(false)
-      toast.success("Last Actor updated successfully")
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update last actor")
+      toast.success("Last actor updated")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update")
     } finally {
       setIsClientsDataLoading(false)
     }
@@ -218,28 +216,26 @@ const PaymentPending = () => {
   const handleConfirmAction = async () => {
     if (!pendingAction) return
     const { type, row, value } = pendingAction
+
     try {
       setIsClientsDataLoading(true)
+
       if (type === "status") {
         await updateStatus(row.filingYearId, value)
-        await updateSubStatus(row.filingYearId, null as any)
-      } else if (type === "sub_status") {
+        await updateSubStatus(row.filingYearId, null as unknown as string)
+      } else {
         await updateSubStatus(row.filingYearId, value)
-        await updateStatus(row.filingYearId, null as any)
+        await updateStatus(row.filingYearId, null as unknown as string)
       }
 
-      await updateLastActor(row.filingYearId, null as any)
-      await updateAssignedUser(row.filingYearId, null as any)
-      await saveComment(row.filingYearId, null as any)
+      await updateLastActor(row.filingYearId, null as unknown as string)
+      await updateAssignedUser(row.filingYearId, null as unknown as string)
+      await saveComment(row.filingYearId, "")
+
       await fetchClients(false)
-      toast.success(
-        `${type === "status" ? "Status" : "Sub-Status"} updated successfully`
-      )
-    } catch (err: any) {
-      toast.error(
-        err?.message ||
-          `Failed to update ${type === "status" ? "status" : "sub-status"}`
-      )
+      toast.success("Updated successfully")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update")
     } finally {
       setConfirmModalOpen(false)
       setPendingAction(null)
@@ -252,9 +248,9 @@ const PaymentPending = () => {
       setIsClientsDataLoading(true)
       await updateAssignedUser(row.filingYearId, value)
       await fetchClients(false)
-      toast.success("Assigned user updated successfully")
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update assigned user")
+      toast.success("Assigned updated")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update")
     } finally {
       setIsClientsDataLoading(false)
     }
@@ -267,10 +263,10 @@ const PaymentPending = () => {
       const updatedBy = userName || (await getUser())?.name || "Unknown"
       await saveComment(currentCommentRow.filingYearId, comment, updatedBy)
       await fetchClients(false)
-      toast.success("Comment updated successfully")
+      toast.success("Comment saved")
       setModalOpen(false)
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to update comment")
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save comment")
     } finally {
       setIsClientsDataLoading(false)
     }
@@ -395,84 +391,81 @@ const PaymentPending = () => {
     },
     ...(userRole === "super_admin"
       ? [
-          {
-            name: (
-              <div
-                className="relative flex items-center gap-2"
-                ref={dropdownRef}
-              >
-                Assigned To
-                <FaFilter
-                  className={`cursor-pointer transition-colors duration-150 ${
-                    showAssignedDropdown ? "text-white" : "text-white"
+        {
+          name: (
+            <div
+              className="relative flex items-center gap-2"
+              ref={dropdownRef}
+            >
+              Assigned To
+              <FaFilter
+                className={`cursor-pointer transition-colors duration-150 ${showAssignedDropdown ? "text-white" : "text-white"
                   } hover:text-white`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowAssignedDropdown((prev) => !prev)
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowAssignedDropdown((prev) => !prev)
+                }}
+              />
+              {showAssignedDropdown && (
+                <div
+                  className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  style={{
+                    position: "absolute",
+                    zIndex: 100,
+                    overscrollBehavior: "contain",
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#9CA3AF #F3F4F6",
                   }}
-                />
-                {showAssignedDropdown && (
+                  onWheel={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div
-                    className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                    style={{
-                      position: "absolute",
-                      zIndex: 100,
-                      overscrollBehavior: "contain",
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#9CA3AF #F3F4F6",
-                    }}
-                    onWheel={(e) => e.stopPropagation()}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div
-                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${
-                        assignedFilter === ""
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-800"
+                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${assignedFilter === ""
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-800"
                       }`}
+                    onClick={() => {
+                      setAssignedFilter("")
+                      setShowAssignedDropdown(false)
+                    }}
+                  >
+                    All
+                  </div>
+                  {assignedUsers.map((user) => (
+                    <div
+                      key={user}
+                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${assignedFilter === user
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-800"
+                        }`}
                       onClick={() => {
-                        setAssignedFilter("")
+                        setAssignedFilter(user)
                         setShowAssignedDropdown(false)
                       }}
                     >
-                      All
+                      {user}
                     </div>
-                    {assignedUsers.map((user) => (
-                      <div
-                        key={user}
-                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                          assignedFilter === user
-                            ? "bg-blue-50 text-blue-700 font-medium"
-                            : "text-gray-800"
-                        }`}
-                        onClick={() => {
-                          setAssignedFilter(user)
-                          setShowAssignedDropdown(false)
-                        }}
-                      >
-                        {user}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ),
-            render: (row: ManageTaxType) => (
-              <select
-                value={row?.assigned || ""}
-                onChange={(e) => handleAssignedChange(row, e.target.value)}
-                className="border px-2 py-1 rounded cursor-pointer"
-              >
-                <option value="">Select User</option>
-                {assignedUsers.map((user) => (
-                  <option key={user} value={user}>
-                    {user}
-                  </option>
-                ))}
-              </select>
-            ),
-          } as TableColumn<ManageTaxType>,
-        ]
+                  ))}
+                </div>
+              )}
+            </div>
+          ),
+          render: (row: ManageTaxType) => (
+            <select
+              value={row?.assigned || ""}
+              onChange={(e) => handleAssignedChange(row, e.target.value)}
+              className="border px-2 py-1 rounded cursor-pointer"
+            >
+              <option value="">Select User</option>
+              {assignedUsers.map((user) => (
+                <option key={user} value={user}>
+                  {user}
+                </option>
+              ))}
+            </select>
+          ),
+        } as TableColumn<ManageTaxType>,
+      ]
       : []),
 
     {

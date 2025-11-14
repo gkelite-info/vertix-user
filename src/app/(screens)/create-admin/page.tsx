@@ -118,9 +118,13 @@ export default function CreateAdmin() {
       })
       setPhone("")
       setPhoneCode("")
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      toast.error(err?.message || "Failed to create user")
+
+      const message =
+        err instanceof Error ? err.message : "Failed to create user"
+
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
