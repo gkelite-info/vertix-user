@@ -11,15 +11,19 @@ type Customer = {
   country: string
 }
 
-
 type VertixCustomer = {
+  customerId?: string
+  customerid?: string
   firstname?: string
   lastname?: string
   email?: string
   phone?: string
   dob?: string
+  date_of_birth?: string
   occupation?: string
+  job?: string
   country?: string
+  residence_country?: string
   updatedAt?: string
   [key: string]: unknown
 }
@@ -40,15 +44,15 @@ export const getAllCustomers = async (
   pageSize: number = 25
 ) => {
   try {
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
 
     const baseQuery = supabaseCustomer
       .from("vertixcustomers")
       .select("*", { count: "exact" })
-      .order("updatedAt", { ascending: false });
+      .order("updatedAt", { ascending: false })
 
-    const process = (rows: any[]): Customer[] =>
+    const process = (rows: VertixCustomer[]): Customer[] =>
       rows.map((row) => ({
         customerId: row.customerId ?? row.customerid ?? "",
         firstname: row.firstname ?? "",
@@ -58,24 +62,24 @@ export const getAllCustomers = async (
         dob: row.dob ?? row.date_of_birth ?? "",
         occupation: row.occupation ?? row.job ?? "",
         country: row.country ?? row.residence_country ?? "",
-      }));
+      }))
 
     if (!search || !search.trim()) {
-      const { data, error, count } = await baseQuery.range(from, to);
-      if (error) throw new Error(error.message);
+      const { data, error, count } = await baseQuery.range(from, to)
+      if (error) throw new Error(error.message)
       return {
-        data: process(data || []),
+        data: process((data as VertixCustomer[]) || []),
         count: count || 0,
-      };
+      }
     }
 
-    const searchTerm = search.trim().toLowerCase();
-    const parts = searchTerm.split(" ").filter(Boolean);
+    const searchTerm = search.trim().toLowerCase()
+    const parts = searchTerm.split(" ").filter(Boolean)
 
-    if (parts.length > 2) return { data: [], count: 0 };
+    if (parts.length > 2) return { data: [], count: 0 }
 
-    const first = parts[0] || "";
-    const last = parts[1] || "";
+    const first = parts[0] || ""
+    const last = parts[1] || ""
 
     if (first && last) {
       const { data, error } = await supabaseCustomer
@@ -83,43 +87,42 @@ export const getAllCustomers = async (
         .select("*", { count: "exact" })
         .ilike("firstname", `%${first}%`)
         .order("updatedAt", { ascending: false })
-        .range(from, to);
+        .range(from, to)
 
-      if (error) throw new Error(error.message);
+      if (error) throw new Error(error.message)
 
       const filtered =
-        (data || []).filter(
+        (data as VertixCustomer[])?.filter(
           (row) =>
             row.firstname?.toLowerCase().includes(first) &&
             row.lastname?.toLowerCase().includes(last)
-        ) || [];
+        ) || []
 
-      return { data: process(filtered), count: filtered.length };
+      return { data: process(filtered), count: filtered.length }
     }
 
-    const term = first;
+    const term = first
 
     const { data, error, count } = await baseQuery
       .or(
         `firstname.ilike.%${term}%,lastname.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`
       )
-      .range(from, to);
+      .range(from, to)
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(error.message)
 
     return {
-      data: process(data || []),
+      data: process((data as VertixCustomer[]) || []),
       count: count || 0,
-    };
+    }
   } catch (err: unknown) {
     console.error(
       "Supabase fetch error:",
       err instanceof Error ? err.message : err
-    );
-    return { data: [], count: 0 };
+    )
+    return { data: [], count: 0 }
   }
-};
-
+}
 
 export const getUser = async () => {
   try {
