@@ -70,6 +70,7 @@ export const getAllRegisteredClients = async (
           firstname: row.customer?.firstname ?? "",
           lastname: row.customer?.lastname ?? "",
           timezone: row.customer?.timezone ?? "",
+          email: row.customer?.email ?? "",
           status: row.status ?? "",
           sub_status: row.sub_status ?? "",
           last_actor: row.last_actor ?? "",
