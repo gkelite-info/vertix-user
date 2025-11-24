@@ -32,6 +32,7 @@ type VertixUser = {
   userId: string
   firstname: string
   lastname: string
+  password: string
   email: string
   phone: string
   createdAt: string
@@ -193,6 +194,7 @@ export const getAllUsers = async (
       email: u.email,
       full_name: `${u.firstname} ${u.lastname}`,
       phone: u.phone,
+      password: u.password,
       created_at: u.createdAt,
     }))
 
