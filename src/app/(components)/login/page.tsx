@@ -99,12 +99,9 @@ function Page() {
       <div className="bg-white lg:h-[100vh] w-[100vw] flex justify-center items-center">
         <div className="flex lg:h-[100%] lg:w-[100%]">
           <div className="bg-[url('/images/login.png')] bg-cover bg-center lg:w-[50%] flex justify-center items-center lg:h-[100%] lg:rounded-4xl">
-            <h1 className="text-black lg:mb-128 lg:mr-110 font-medium text-lg">
-              Vertix Tax
-            </h1>
           </div>
           <div className="bg-red-00 lg:w-[50%] lg:h-[100%] lg:p-4 flex flex-col items-center justify-end">
-            <h1 className="lg:text-2xl font-semibold text-black">Login</h1>
+            <h1 className="lg:text-3xl font-semibold text-black">Login</h1>
             <div className="bg-green-00 lg:h-[85%] lg:w-[95%] lg:p-3 flex flex-col items-center">
               <div className="bg-pink-00 lg:h-[90%] lg:w-[80%] flex flex-col justify-center">
                 <div className="lg:w-[100%] lg:h-[10%] flex items-center border border-b-2 border-l-0 border-t-0 border-r-0 border-[#D0D0D0] lg:gap-2">
@@ -151,26 +148,6 @@ function Page() {
                     {passwordError}
                   </p>
                 )}
-                <div className="flex justify-between lg:mt-8">
-                  <div className="flex space-x-3 items-center">
-                    <input
-                      id="remember"
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                      className="h-4 w-4 accent-[#1D2B48] cursor-pointer"
-                    />
-                    <label
-                      htmlFor="remember"
-                      className="text-sm text-[#3A4969]"
-                    >
-                      Remember Password
-                    </label>
-                  </div>
-                  <p className="font-medium text-sm border border-b-1 border-l-0 border-r-0 border-t-0 text-[#3A4969] cursor-pointer">
-                    Forgot Password ?
-                  </p>
-                </div>
                 <div className="bg-green-00 lg:h-[20%] flex flex-col lg:gap-2 lg:mt-8 items-center">
                   <button
                     className="text-white lg:h-[65%] lg:w-[100%] text-lg font-medium lg:rounded-full bg-[#1D2B48] cursor-pointer"
