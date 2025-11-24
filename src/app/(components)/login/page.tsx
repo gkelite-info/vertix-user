@@ -14,7 +14,6 @@ function Page() {
   const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
-  const [remember, setRemember] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleEmailChange = (e: { target: { value: string } }) => {
