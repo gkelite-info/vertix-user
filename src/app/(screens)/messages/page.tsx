@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Table from "@/app/(components)/Table/Table";
-import Pagination from "@/app/(components)/Table/pagination";
 import { TableColumn } from "@/app/(components)/Table/types";
 import { getAllMessages } from "@/app/api/supabaseApi/messages";
+import { getAllContactInformation } from "@/app/api/supabaseApi/contactAPI";
 
 type Message = {
     messageId: number;
@@ -22,11 +22,25 @@ type Message = {
     };
 };
 
+type ContactInfo = {
+    contactId: number;
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export default function MessagesPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [contacts, setContacts] = useState<ContactInfo[]>([]);
+    const [loadingContacts, setLoadingContacts] = useState(true);
+    const [contactPage, setContactPage] = useState(1);
+    const [contactTotal, setContactTotal] = useState(0);
     const pageSize = 25;
 
     useEffect(() => {
@@ -40,6 +54,22 @@ export default function MessagesPage() {
 
         fetchMessages();
     }, [currentPage]);
+
+    useEffect(() => {
+        const fetchContacts = async () => {
+            setLoadingContacts(true);
+            const { data, totalCount } = await getAllContactInformation(
+                contactPage,
+                pageSize
+            );
+            console.log("Here", getAllContactInformation)
+            setContacts(data);
+            setContactTotal(totalCount);
+            setLoadingContacts(false);
+        };
+
+        fetchContacts();
+    }, [contactPage]);
 
     const columns: TableColumn<Message>[] = [
         { name: "S.No", width: "80px" },
@@ -82,8 +112,17 @@ export default function MessagesPage() {
         },
     ];
 
+    const contactColumns: TableColumn<ContactInfo>[] = [
+        { name: "S.No", width: "80px" },
+        { name: "Name", render: (row) => row.name, width: "180px" },
+        { name: "Email", render: (row) => row.email, width: "220px" },
+        { name: "Subject", render: (row) => row.subject, width: "200px" },
+        { name: "Message", render: (row) => row.message, width: "350px" },
+        { name: "Created At", render: (row) => new Date(row.createdAt).toLocaleString(), width: "180px" },
+    ];
+
     return (
-        <div className="p-2 w-full h-full">
+        <div className="p-2 w-full pb-5">
             <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
                 Messages
             </h1>
@@ -96,11 +135,15 @@ export default function MessagesPage() {
                 pageSize={pageSize}
             />
 
-            <Pagination
-                totalItems={totalCount}
-                currentPage={currentPage}
+            <h1 className="text-[#1D2B48] font-medium text-lg mb-3 mt-5">
+                Contact Information
+            </h1>
+            <Table<ContactInfo>
+                columns={contactColumns}
+                data={contacts}
+                isLoading={loadingContacts}
+                currentPage={contactPage}
                 pageSize={pageSize}
-                onPageChange={(page) => setCurrentPage(page)}
             />
         </div>
     );
