@@ -44,32 +44,50 @@ export default function MessagesPage() {
     const pageSize = 25;
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchMessages = async () => {
             setLoading(true);
             const { data, totalCount } = await getAllMessages(currentPage, pageSize);
+            if (!isMounted) return;
             setMessages(data);
             setTotalCount(totalCount);
             setLoading(false);
         };
 
         fetchMessages();
+
+        const interval = setInterval(fetchMessages, 10000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [currentPage]);
 
+
     useEffect(() => {
+        let isMounted = true;
+
         const fetchContacts = async () => {
             setLoadingContacts(true);
-            const { data, totalCount } = await getAllContactInformation(
-                contactPage,
-                pageSize
-            );
-            console.log("Here", getAllContactInformation)
+            const { data, totalCount } = await getAllContactInformation(contactPage, pageSize);
+            if (!isMounted) return;
             setContacts(data);
             setContactTotal(totalCount);
             setLoadingContacts(false);
         };
 
         fetchContacts();
+
+        const interval = setInterval(fetchContacts, 10000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [contactPage]);
+
 
     const columns: TableColumn<Message>[] = [
         { name: "S.No", width: "80px" },
