@@ -12,7 +12,7 @@ function Table<T>({
   title
 }: TableProps<T> & { title?: string }) {
   return (
-    <div className="w-full overflow-x-auto bg-red-00 h-fit">
+    <div className="w-full overflow-x-auto bg-red-00">
       <table className="min-w-full border-collapse overflow-y-auto">
         <TableHeader columns={columns} />
         <tbody className="text-[#1D2B48]">

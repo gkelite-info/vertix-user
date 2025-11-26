@@ -5,7 +5,6 @@ import Header from "./(components)/header/page"
 import { useEffect, useState } from "react"
 import Navbar from "./(components)/navbar/page"
 import ProtectedRoute from "@/utils/ProtectedRoute"
-// import SearchBar from "./(components)/searchbar/page";
 
 export default function ClientLayout({
   children,
@@ -48,7 +47,6 @@ export default function ClientLayout({
             className={`flex-1 flex flex-col overflow-y-auto scrollbar-hide bg-[#EBEBEB] rounded-lg
     ${shouldHideLayout ? "mr-0 p-0 mt-0" : "mr-5 p-4 mt-3"}`}
           >
-            {/* {!shouldHideLayout && <SearchBar />} */}
             {children}
           </main>
         </div>

@@ -111,7 +111,7 @@ const ManagePostPayments = () => {
     fetchUser()
   }, [])
 
-  const fetchClients = useCallback( 
+  const fetchClients = useCallback(
     async (showLoader = true) => {
       if (!userRole) return
 
@@ -414,86 +414,83 @@ const ManagePostPayments = () => {
     },
     ...(userRole === "super_admin"
       ? [
-          {
-            name: (
-              <div
-                className="relative flex items-center gap-2"
-                ref={dropdownRef}
-              >
-                Assigned To
-                <FaFilter
-                  className={`cursor-pointer transition-colors duration-150 ${
-                    showAssignedDropdown ? "text-white" : "text-white" // 🆕 CHANGE: darker gray default
+        {
+          name: (
+            <div
+              className="relative flex items-center gap-2"
+              ref={dropdownRef}
+            >
+              Assigned To
+              <FaFilter
+                className={`cursor-pointer transition-colors duration-150 ${showAssignedDropdown ? "text-white" : "text-white" // 🆕 CHANGE: darker gray default
                   } hover:text-white`} // 🆕 CHANGE: clearer hover
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowAssignedDropdown((prev) => !prev)
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowAssignedDropdown((prev) => !prev)
+                }}
+              />
+              {/* 🆕 FIX: Dropdown now opens below the icon with proper z-index */}
+              {showAssignedDropdown && (
+                <div
+                  className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  // 🆕 FIX: Added zIndex, overscrollBehavior, pointer-events
+                  style={{
+                    position: "absolute", // --- Reinforce positioning for dropdown
+                    zIndex: 100, // --- Ensures dropdown appears above table
+                    overscrollBehavior: "contain", // --- Prevents table from scrolling
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#9CA3AF #F3F4F6",
                   }}
-                />
-                {/* 🆕 FIX: Dropdown now opens below the icon with proper z-index */}
-                {showAssignedDropdown && (
+                  onWheel={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent scroll on mousewheel
+                  onClick={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent click capture
+                >
                   <div
-                    className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                    // 🆕 FIX: Added zIndex, overscrollBehavior, pointer-events
-                    style={{
-                      position: "absolute", // --- Reinforce positioning for dropdown
-                      zIndex: 100, // --- Ensures dropdown appears above table
-                      overscrollBehavior: "contain", // --- Prevents table from scrolling
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#9CA3AF #F3F4F6",
-                    }}
-                    onWheel={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent scroll on mousewheel
-                    onClick={(e) => e.stopPropagation()} // 🆕 FIX: Prevent parent click capture
-                  >
-                    <div
-                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${
-                        assignedFilter === ""
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-800"
+                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 font-medium ${assignedFilter === ""
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-800"
                       }`}
+                    onClick={() => {
+                      setAssignedFilter("")
+                      setShowAssignedDropdown(false)
+                    }}
+                  >
+                    All
+                  </div>
+                  {assignedUsers.map((user) => (
+                    <div
+                      key={user}
+                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${assignedFilter === user
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-800"
+                        }`}
                       onClick={() => {
-                        setAssignedFilter("")
+                        setAssignedFilter(user)
                         setShowAssignedDropdown(false)
                       }}
                     >
-                      All
+                      {user}
                     </div>
-                    {assignedUsers.map((user) => (
-                      <div
-                        key={user}
-                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                          assignedFilter === user
-                            ? "bg-blue-50 text-blue-700 font-medium"
-                            : "text-gray-800"
-                        }`}
-                        onClick={() => {
-                          setAssignedFilter(user)
-                          setShowAssignedDropdown(false)
-                        }}
-                      >
-                        {user}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ),
-            render: (row: ManageTaxType) => (
-              <select
-                value={row?.assigned || ""}
-                onChange={(e) => handleAssignedChange(row, e.target.value)}
-                className="border px-2 py-1 rounded cursor-pointer"
-              >
-                <option value="">Select User</option>
-                {assignedUsers.map((user) => (
-                  <option key={user} value={user}>
-                    {user}
-                  </option>
-                ))}
-              </select>
-            ),
-          } as TableColumn<ManageTaxType>,
-        ]
+                  ))}
+                </div>
+              )}
+            </div>
+          ),
+          render: (row: ManageTaxType) => (
+            <select
+              value={row?.assigned || ""}
+              onChange={(e) => handleAssignedChange(row, e.target.value)}
+              className="border px-2 py-1 rounded cursor-pointer"
+            >
+              <option value="">Select User</option>
+              {assignedUsers.map((user) => (
+                <option key={user} value={user}>
+                  {user}
+                </option>
+              ))}
+            </select>
+          ),
+        } as TableColumn<ManageTaxType>,
+      ]
       : []),
 
     {
@@ -503,15 +500,15 @@ const ManagePostPayments = () => {
   ]
 
   return (
-    <div className="w-full p-2 bg-[#EBEBEB] h-[100%] flex flex-col justify-between">
-      {tab === "registered-clients" && (
+    <div className="w-full p-2 bg-[#EBEBEB] h-[100%] flex flex-col justify-start">
+      {tab === "efile-pending" && (
         <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
-          Registered Clients
+          E-File Pending
         </h1>
       )}
-      {tab === "documents-pending" && (
+      {tab === "documents-upload-pending" && (
         <h1 className="text-[#1D2B48] font-medium text-lg mb-3">
-          Documents Pending
+          Documents Upload Pending
         </h1>
       )}
 

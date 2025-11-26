@@ -29,6 +29,7 @@ export default function CreateAdmin() {
 
   const [checkingRole, setCheckingRole] = useState(true)
 
+
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -50,19 +51,27 @@ export default function CreateAdmin() {
   }, [router])
 
   const handlePhoneCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    if (/^[+0-9]*$/.test(val)) {
-      setPhoneCode(val)
-      setFormData((prev) => ({ ...prev, phone: val + phone }))
+    let val = e.target.value.replace(/[^0-9+]/g, "");
+    if (!val.startsWith("+")) {
+      val = "+" + val.replace(/\+/g, "");
     }
-  }
+
+    setPhoneCode(val);
+    setFormData((prev) => ({ ...prev, phone: val + phone }));
+  };
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
-  }
+    const { id, value } = e.target;
+    if ((id === "firstname" || id === "lastname") && !/^[A-Za-z ]*$/.test(value)) {
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
 
   const handleEmailChange = (e: { target: { value: string } }) => {
     const value = e.target.value
@@ -75,12 +84,15 @@ export default function CreateAdmin() {
     else setEmailError("")
   }
 
-  const handlePhoneChange = (e: { target: { value: string } }) => {
-    let value = e.target.value.replace(/[^0-9]/g, "")
-    if (value.length > 10) value = value.substring(0, 10)
-    setPhone(value)
-    setFormData((prev) => ({ ...prev, phone: value }))
-  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    if (value.length > 10) value = value.slice(0, 10);
+
+    setPhone(value);
+    setFormData((prev) => ({ ...prev, phone: phoneCode + value }));
+  };
+
 
   const handleSignup = async () => {
     if (!formData.firstname) return toast.error("First name is required!")
@@ -172,7 +184,7 @@ export default function CreateAdmin() {
               id="email"
               value={formData.email}
               onChange={handleEmailChange}
-              placeholder="Enter your Email Id"
+              placeholder="Enter email Id"
               className="w-full p-2 text-black font-medium focus:outline-none"
             />
           </div>
@@ -187,9 +199,9 @@ export default function CreateAdmin() {
               maxLength={4}
             />
             <input
-              type="number"
-              placeholder="Enter your Phone"
-              value={formData.phone}
+              type="text"
+              placeholder="Enter Phone"
+              value={phone}
               onChange={handlePhoneChange}
               className="flex-1 text-black px-2 py-2 focus:outline-none"
             />
@@ -251,23 +263,10 @@ export default function CreateAdmin() {
             />
           </div>
 
-          <div className="flex items-center gap-2 mt-1">
-            <input
-              id="remember"
-              type="checkbox"
-              checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-              className="h-4 w-4 accent-[#1D2B48] cursor-pointer"
-            />
-            <label htmlFor="remember" className="text-sm text-gray-600">
-              Remember Password
-            </label>
-          </div>
-
           <div className="flex flex-col gap-3 items-center mt-3">
             <button
               type="button"
-              className="w-full bg-[#1D2B48] text-white py-2.5 rounded-full font-medium hover:bg-[#27385E] transition"
+              className="w-full bg-[#1D2B48] text-white py-2.5 rounded-full font-medium cursor-pointer transition"
               onClick={handleSignup}
               disabled={isLoading}
             >

@@ -385,7 +385,7 @@ const ManageClient = () => {
   ]
 
   return (
-    <div className="w-full p-2 bg-[#EBEBEB] h-[100%] flex flex-col justify-between">
+    <div className="w-full p-2 bg-[#EBEBEB] h-[100%] flex flex-col justify-start">
       <h1 className="text-[#1D2B48] font-medium text-lg mb-3">Revert Clients</h1>
       <Table
         columns={columns}
