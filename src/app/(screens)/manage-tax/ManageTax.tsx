@@ -338,15 +338,15 @@ const ManageTax = () => {
                 (row as unknown as { customer?: { email?: string }, email?: string })
                   .customer?.email ??
                 (row as unknown as { email?: string }).email
-              console.log("Vamshi", customerEmail);
-              console.log("here", row);
-              
+              console.log("Customer email is", customerEmail);
+              console.log("Rows are", row);
+
 
               if (!customerEmail) {
                 toast.error("Customer email not found", { id: "taxorg" })
                 return
               }
-              
+
 
               const { generateCustomerLoginLink } = await import(
                 "@/app/api/supabaseApi/tax-organizer"

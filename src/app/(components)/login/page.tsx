@@ -149,11 +149,15 @@ function Page() {
                 )}
                 <div className="bg-green-00 lg:h-[20%] flex flex-col lg:gap-2 lg:mt-8 items-center">
                   <button
-                    className="text-white lg:h-[65%] lg:w-[100%] text-lg font-medium lg:rounded-full bg-[#1D2B48] cursor-pointer"
+                    className="text-white lg:h-[65%] lg:w-[100%] text-lg font-medium lg:rounded-full bg-[#1D2B48] cursor-pointer flex items-center justify-center"
                     onClick={handleLogin}
                     disabled={isSubmitted}
                   >
-                    {isSubmitted ? "Loading..." : "Login"}
+                    {isSubmitted ? (
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      "Login"
+                    )}
                   </button>
                   <div className="flex lg:gap-2 items-end justify-center lg:h-[35%] lg:w-[80%]">
                   </div>
