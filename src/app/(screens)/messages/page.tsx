@@ -57,7 +57,7 @@ export default function MessagesPage() {
 
         fetchMessages();
 
-        const interval = setInterval(fetchMessages, 10000);
+        const interval = setInterval(fetchMessages, 30 * 60 * 1000 );
 
         return () => {
             isMounted = false;
@@ -80,7 +80,7 @@ export default function MessagesPage() {
 
         fetchContacts();
 
-        const interval = setInterval(fetchContacts, 10000);
+        const interval = setInterval(fetchContacts, 30 * 60 * 1000);
 
         return () => {
             isMounted = false;
