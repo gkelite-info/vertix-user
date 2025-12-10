@@ -31,8 +31,7 @@ const tempStorage = isClient
     removeItem: () => { }
   };
 
-export const supabaseCustomer: SupabaseClient | null = isClient
-  ? createClient(
+export const supabaseCustomer: SupabaseClient = createClient(
     supabaseCustomerUrl,
     supabaseCustomerAnonKey,
     {
@@ -45,9 +44,8 @@ export const supabaseCustomer: SupabaseClient | null = isClient
       },
     }
   )
-  : null;
 
-if (isClient && supabaseCustomer) {
+if (isClient) {
   (async () => {
     try {
       interface BroadcastChannelMock {
