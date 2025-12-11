@@ -38,7 +38,6 @@ const baseNavItems = [
     ],
   },
   { label: "Revert Clients", href: "/revert-client" },
-  { label: "Admin Portal", href: "/admin-portal" },
 ];
 
 function NavbarContent() {
@@ -51,27 +50,29 @@ function NavbarContent() {
     const fetchUserRole = async () => {
       try {
         const user = await getUser();
+
         if (user?.role === "super_admin") {
           setNavItems((prev) => {
-            const alreadyExists = prev.some((i) => i.href === "/create-admin");
-            if (alreadyExists) return prev;
+            const items = [...prev];
 
-            const adminPortalIndex = prev.findIndex(
-              (i) => i.href === "/admin-portal"
-            );
-
-            if (adminPortalIndex !== -1) {
-              const newItems = [...prev];
-              newItems.splice(adminPortalIndex, 0, {
+            const adminPortalExists = items.some((i) => i.href === "/admin-portal");
+            const createAdminExists = items.some((i) => i.href === "/create-admin");
+            if (!adminPortalExists) {
+              items.push({
+                label: "Admin Portal",
+                href: "/admin-portal",
+              });
+            }
+            if (!createAdminExists) {
+              items.push({
                 label: "Create Admin",
                 href: "/create-admin",
               });
-              return newItems;
-            } else {
-              return [...prev, { label: "Create Admin", href: "/create-admin" }];
             }
+            return [...items];
           });
         }
+
       } catch (err) {
         console.error("Error fetching user:", err);
       }

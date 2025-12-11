@@ -16,56 +16,63 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 })
 
-const tempStorage = {
-  getItem: (key: string) => sessionStorage.getItem(`imp-${key}`),
-  setItem: (key: string, value: string) =>
-    sessionStorage.setItem(`imp-${key}`, value),
-  removeItem: (key: string) => sessionStorage.removeItem(`imp-${key}`),
-}
+const isClient = typeof window !== "undefined";
+
+const tempStorage = isClient
+  ? {
+    getItem: (key: string) => sessionStorage.getItem(`imp-${key}`),
+    setItem: (key: string, value: string) =>
+      sessionStorage.setItem(`imp-${key}`, value),
+    removeItem: (key: string) => sessionStorage.removeItem(`imp-${key}`),
+  }
+  : {
+    getItem: () => null,
+    setItem: () => { },
+    removeItem: () => { }
+  };
 
 export const supabaseCustomer: SupabaseClient = createClient(
-  supabaseCustomerUrl,
-  supabaseCustomerAnonKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      storageKey: "sb-customer-impersonation",
-      storage: tempStorage,
-    },
-  }
-)
+    supabaseCustomerUrl,
+    supabaseCustomerAnonKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        storageKey: "sb-customer-impersonation",
+        storage: tempStorage,
+      },
+    }
+  )
 
-if (typeof window !== "undefined") {
+if (isClient) {
   (async () => {
     try {
       interface BroadcastChannelMock {
-        postMessage: (msg?: unknown) => void
-        addEventListener: (type: string, listener: () => void) => void
-        removeEventListener: (type: string, listener: () => void) => void
-        close: () => void
+        postMessage: (msg?: unknown) => void;
+        addEventListener: (type: string, listener: () => void) => void;
+        removeEventListener: (type: string, listener: () => void) => void;
+        close: () => void;
       }
 
       interface InternalAuth {
-        _bc?: BroadcastChannelMock | null
+        _bc?: BroadcastChannelMock | null; 
       }
 
-      const auth = (supabaseCustomer.auth as unknown) as InternalAuth
+      const auth = supabaseCustomer.auth as unknown as InternalAuth;
 
-      await new Promise((r) => setTimeout(r, 50))
-
-      if (auth._bc) auth._bc.close()
+      await new Promise((r) => setTimeout(r, 50));
+      if (auth._bc) auth._bc.close();
 
       auth._bc = {
         postMessage: () => { },
         addEventListener: () => { },
         removeEventListener: () => { },
         close: () => { },
-      }
+      };
     } catch (e) {
-      console.warn("Isolation skipped:", e)
+      console.warn("Broadcast isolation skipped:", e);
     }
-  })()
+  })();
 }
 
