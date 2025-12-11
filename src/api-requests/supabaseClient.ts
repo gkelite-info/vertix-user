@@ -56,7 +56,7 @@ if (isClient) {
       }
 
       interface InternalAuth {
-        _bc?: BroadcastChannelMock | null;
+        _bc?: BroadcastChannelMock | null; 
       }
 
       const auth = supabaseCustomer.auth as unknown as InternalAuth;
