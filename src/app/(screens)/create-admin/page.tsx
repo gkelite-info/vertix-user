@@ -151,7 +151,7 @@ export default function CreateAdmin() {
   }
 
   return (
-    <div className=" flex items-center justify-center">
+    <div className=" flex xl:min-h-[88vh] items-center justify-center">
       <div className="w-[90%] max-w-sm bg-white rounded-2xl shadow-lg p-6">
         <h1 className="text-2xl font-semibold text-center text-[#1D2B48] mb-5">
           Create an account

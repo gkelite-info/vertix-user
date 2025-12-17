@@ -39,6 +39,8 @@ type VertixUser = {
   [key: string]: unknown
 }
 
+const CUSTOMER_ID_MAX_DIGITS = 9
+
 export const getAllCustomers = async (
   search?: string,
   page: number = 1,
@@ -76,6 +78,41 @@ export const getAllCustomers = async (
 
     const searchTerm = search.trim().toLowerCase()
     const parts = searchTerm.split(" ").filter(Boolean)
+
+    const isNumericSearch = /^\d+$/.test(searchTerm)
+
+    if (isNumericSearch) {
+      const digitLength = searchTerm.length
+      const numericValue = Number(searchTerm)
+
+      if (digitLength <= CUSTOMER_ID_MAX_DIGITS) {
+        const { data, error, count } = await baseQuery
+          .or(
+            `phone.ilike.%${searchTerm}%,customerId.eq.${numericValue},customerId.eq.${numericValue}`
+          )
+          .range(from, to)
+
+        if (error) throw new Error(error.message)
+
+        return {
+          data: process((data as VertixCustomer[]) || []),
+          count: count || 0,
+        }
+      }
+
+      const { data, error, count } = await baseQuery
+        .ilike("phone", `%${searchTerm}%`)
+        .range(from, to)
+
+      if (error) throw new Error(error.message)
+
+      return {
+        data: process((data as VertixCustomer[]) || []),
+        count: count || 0,
+      }
+    }
+
+
 
     if (parts.length > 2) return { data: [], count: 0 }
 
