@@ -28,7 +28,7 @@ type ManageTaxType = {
   timezone: string
   status: string
   sub_status: string
-  last_actor: string
+  last_actor: string | null
   action: string
   comments: string
   assigned: string
@@ -206,7 +206,10 @@ const ManageTax = () => {
     }
   }
 
-  const handleLastActorChange = async (row: ManageTaxType, value: string) => {
+  const handleLastActorChange = async (
+    row: ManageTaxType,
+    value: string | null
+  ) => {
     try {
       setIsClientsDataLoading(true)
       await updateLastActor(row.filingYearId, value)
@@ -221,6 +224,7 @@ const ManageTax = () => {
     }
   }
 
+
   const handleConfirmAction = async () => {
     if (!pendingAction) return
     const { type, row, value } = pendingAction
@@ -229,14 +233,14 @@ const ManageTax = () => {
       setIsClientsDataLoading(true)
       if (type === "status") {
         await updateStatus(row.filingYearId, value)
-        await updateSubStatus(row.filingYearId, null as unknown as string)
+        await updateSubStatus(row.filingYearId, null)
       } else {
         await updateSubStatus(row.filingYearId, value)
-        await updateStatus(row.filingYearId, null as unknown as string)
+        await updateStatus(row.filingYearId, null)
       }
 
-      await updateLastActor(row.filingYearId, null as unknown as string)
-      await updateAssignedUser(row.filingYearId, null as unknown as string)
+      await updateLastActor(row.filingYearId, null)
+      // await updateAssignedUser(row.filingYearId, null)
       await saveComment(row.filingYearId, "")
 
       toast.success(
@@ -313,8 +317,13 @@ const ManageTax = () => {
       name: "Last Actor",
       render: (row) => (
         <select
-          value={row.last_actor || "Select Last Actor"}
-          onChange={(e) => handleLastActorChange(row, e.target.value)}
+          value={row.last_actor ?? ""}
+          onChange={(e) =>
+            handleLastActorChange(
+              row,
+              e.target.value === "" ? null : e.target.value
+            )
+          }
           className="border px-2 py-1 rounded cursor-pointer"
         >
           <option value="">Select Last Actor</option>
@@ -326,6 +335,7 @@ const ManageTax = () => {
         </select>
       ),
     },
+
     {
       name: "Action",
       render: (row: ManageTaxType) => (

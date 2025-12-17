@@ -181,7 +181,7 @@ const ManagePostPayments = () => {
         await updateStatus(row.filingYearId, value)
         await updateLastActor(row.filingYearId, null as any)
         await updateSubStatus(row.filingYearId, null as any)
-        await updateAssignedUser(row.filingYearId, null as any)
+        // await updateAssignedUser(row.filingYearId, null as any)
         await saveComment(row.filingYearId, "")
         await fetchClients(false)
         toast.success("Status updated successfully")

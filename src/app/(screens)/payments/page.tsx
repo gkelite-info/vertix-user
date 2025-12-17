@@ -154,7 +154,6 @@ const PaymentPending = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // 🆕 CHANGE: On update APIs, call server then refresh list via fetchClients()
   const handleStatusChange = async (row: ManageTaxType, value: string) => {
     if (value === "Post Payments") {
       try {
@@ -162,7 +161,7 @@ const PaymentPending = () => {
         await updateStatus(row.filingYearId, value)
         await updateLastActor(row.filingYearId, null as any)
         await updateSubStatus(row.filingYearId, null as any)
-        await updateAssignedUser(row.filingYearId, null as any)
+        // await updateAssignedUser(row.filingYearId, null as any)
         await saveComment(row.filingYearId, null as any)
         await fetchClients(false)
         toast.success("Status updated successfully")
@@ -236,7 +235,7 @@ const PaymentPending = () => {
       }
 
       await updateLastActor(row.filingYearId, null as any)
-      await updateAssignedUser(row.filingYearId, null as any)
+      // await updateAssignedUser(row.filingYearId, null as any)
       await saveComment(row.filingYearId, null as any)
       await fetchClients(false)
       toast.success(
