@@ -73,13 +73,13 @@ export const getAllRegisteredClients = async (
           email: row.customer?.email ?? "",
           status: row.status ?? "",
           sub_status: row.sub_status ?? "",
-          last_actor: row.last_actor ?? "",
+          last_actor: row.last_actor ?? null,
           action: row.action ?? "",
           comments: row.comments ?? "",
           assigned: row.assigned ?? "",
           updatedAt: row.updatedAt ?? "",
         })) ?? [],
-      totalCount: count ?? 0,   // ✅ FIXED
+      totalCount: count ?? 0,
     }
 
   } catch (err: unknown) {
@@ -91,7 +91,7 @@ export const getAllRegisteredClients = async (
   }
 }
 
-export const updateStatus = async (rowId: number, status: string) => {
+export const updateStatus = async (rowId: number, status: string | null) => {
   const { data, error } = await supabaseCustomer
     .from("filing_year")
     .update({ status })

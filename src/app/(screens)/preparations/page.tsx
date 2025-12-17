@@ -155,7 +155,7 @@ const Preparations = () => {
       if (value === "Review Pending") {
         await updateLastActor(row.filingYearId, null as any)
         await updateSubStatus(row.filingYearId, null as any)
-        await updateAssignedUser(row.filingYearId, null as any)
+        // await updateAssignedUser(row.filingYearId, null as any)
         await saveComment(row.filingYearId, "")
       }
       await fetchClients(false)
@@ -206,7 +206,7 @@ const Preparations = () => {
       await updateSubStatus(row.filingYearId, value)
       await updateStatus(row.filingYearId, null as any)
       await updateLastActor(row.filingYearId, null as any)
-      await updateAssignedUser(row.filingYearId, null as any)
+      // await updateAssignedUser(row.filingYearId, null as any)
       await saveComment(row.filingYearId, "")
       await fetchClients(false)
       toast.success("Sub-Status updated successfully")
