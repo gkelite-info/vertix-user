@@ -12,6 +12,7 @@ export default function Header() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const router = useRouter()
   const hasFetchedUser = useRef(false)
+
   const fetchUser = async () => {
     try {
       if (hasFetchedUser.current) return
@@ -45,23 +46,25 @@ export default function Header() {
   }, [])
 
   const handleLogout = async () => {
-  try {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
 
-    setIsLogoutModalOpen(false)
-    toast.success("Logged out successfully")
+      setIsLogoutModalOpen(false)
+      toast.success("Logged out successfully")
 
-    localStorage.removeItem("sb-support-auth")
-    localStorage.removeItem("token")
-    router.push("/login")
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : "Error logging out. Please try again."
-    console.error("Logout error:", err)
-    toast.error(errorMsg)
+      localStorage.removeItem("sb-support-auth")
+      localStorage.removeItem("token")
+      router.push("/login")
+    } catch (err: unknown) {
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : "Error logging out. Please try again."
+      console.error("Logout error:", err)
+      toast.error(errorMsg)
+    }
   }
-}
-
 
   return (
     <>
@@ -70,32 +73,59 @@ export default function Header() {
         onConfirm={handleLogout}
         onCancel={() => setIsLogoutModalOpen(false)}
       />
+
       <div className="sticky top-0 z-50 bg-white h-14 w-full flex items-center justify-between px-5">
-        <div className=" w-[20%] h-[100%] flex items-center justify-left">
+        <div className="w-[20%] h-full flex items-center">
           <img
             src="/images/vertix-logo.png"
             alt="vertixLogo"
             className="h-12 object-contain"
           />
         </div>
-        <div className="flex items-center gap-4 h-[100%] w-[23%]">
-          <div className="bg-[#1D2B48] h-[80%] w-[100%] lg:px-3 flex flex-col items-center justify-center rounded-lg shadow-lg">
-            <div className="text-white flex justify-between lg:gap-5 bg-green-00 lg:w-[100%]">
-              <div className="flex flex-col bg-indigo-00 w-[50%]">
+
+        <div className="flex items-center justify-end gap-4 h-full">
+          
+          <div
+            className="
+              bg-[#1D2B48] h-[80%]
+              inline-flex items-center    
+              min-w-[200px] max-w-[420px]  
+              px-4 rounded-lg shadow-lg
+            "
+          >
+            <div className="text-white flex justify-between gap-6 w-full">
+              
+              <div className="flex flex-col min-w-0">
                 <h5 className="font-semibold text-xs">Name</h5>
-                <p className="text-xs font-medium">{userName || "-"}</p>
+                <p
+                  className="
+                    text-xs font-medium
+                    whitespace-nowrap truncate  
+                  "
+                  title={userName}                  
+                >
+                  {userName || "-"}
+                </p>
               </div>
-              <div className="flex flex-col bg-gray-00 text-end w-[50%] box-border overflow-x-auto">
-                <h5 className="font-semibold text-xs w-[100%] bg-red-00">
-                  User ID
-                </h5>
-                <p className="text-xs font-medium">{userId || "-"}</p>
+
+              <div className="flex flex-col text-end min-w-0">
+                <h5 className="font-semibold text-xs">User ID</h5>
+                <p
+                  className="
+                    text-xs font-medium
+                    whitespace-nowrap truncate
+                  "
+                  title={userId ?? ""}
+                >
+                  {userId || "-"}
+                </p>
               </div>
             </div>
           </div>
+
           <button
             onClick={() => setIsLogoutModalOpen(true)}
-            className="bg-[#E63946] text-white text-sm font-medium px-6 h-[80%] cursor-pointer rounded-md hover:bg-[#d62828] transition-all duration-200 shadow-sm"
+            className="bg-[#E63946] text-white text-sm font-medium px-6 h-[80%] rounded-md hover:bg-[#d62828] transition-all shadow-sm"
           >
             Logout
           </button>
