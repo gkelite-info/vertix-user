@@ -125,7 +125,7 @@ export default function Header() {
 
           <button
             onClick={() => setIsLogoutModalOpen(true)}
-            className="bg-[#E63946] text-white text-sm font-medium px-6 h-[80%] rounded-md hover:bg-[#d62828] transition-all shadow-sm"
+            className="bg-[#E63946] cursor-pointer text-white text-sm font-medium px-6 h-[80%] rounded-md hover:bg-[#d62828] transition-all shadow-sm"
           >
             Logout
           </button>
