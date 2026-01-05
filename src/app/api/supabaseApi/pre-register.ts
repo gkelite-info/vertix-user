@@ -10,6 +10,7 @@ export const getAllPreRegisterClients = async (
   const { data, error, count } = await supabaseCustomer
     .from("referrals")
     .select("*", { count: "exact" })
+    .eq("is_deleted", false)
     .order("updatedAt", { ascending: false })
     .range(from, to)
 
@@ -22,6 +23,7 @@ export const updateStatus = async (rowId: number, status: string) => {
     .from("referrals")
     .update({ status })
     .eq("referId", rowId)
+    .eq("is_deleted", false)
 
   if (error) throw error
   return data
@@ -32,6 +34,7 @@ export const updateFollowup = async (rowId: number, followup: string) => {
     .from("referrals")
     .update({ followup })
     .eq("referId", rowId)
+    .eq("is_deleted", false)
 
   if (error) throw error
   return data
@@ -48,6 +51,7 @@ export const saveComment = async (
     .from("referrals")
     .update({ comments: updatedComment })
     .eq("referId", rowId)
+    .eq("is_deleted", false)
 
   if (error) throw error
   return data
