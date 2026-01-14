@@ -7,6 +7,7 @@ type Customer = {
   email: string
   phone: string
   dob: string
+  timezone: string
   occupation: string
   country: string
 }
@@ -23,6 +24,7 @@ type VertixCustomer = {
   occupation?: string
   job?: string
   country?: string
+  timezone: string
   residence_country?: string
   updatedAt?: string
   [key: string]: unknown
@@ -64,6 +66,7 @@ export const getAllCustomers = async (
         phone: row.phone ?? "",
         dob: row.dob ?? row.date_of_birth ?? "",
         occupation: row.occupation ?? row.job ?? "",
+        timezone: row.timezone ?? row.timezone ?? "",
         country: row.country ?? row.residence_country ?? "",
       }))
 

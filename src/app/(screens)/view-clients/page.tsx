@@ -15,6 +15,7 @@ type Customer = {
   lastname: string
   email: string
   phone: string
+  timezone: string
   dob: string
   occupation: string
   country: string
@@ -37,6 +38,7 @@ export default function Dashboard() {
     { name: "Last Name", render: (row) => row.lastname },
     { name: "Email", render: (row) => row.email },
     { name: "Phone", render: (row) => row.phone },
+    { name: "Timezone", render: (row) => row.timezone },
     {
       name: "Date of Birth",
       render: (row) => formatDateMMDDYYYY(row.dob),
