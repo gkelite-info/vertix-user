@@ -112,6 +112,11 @@ function Page() {
                     id="email"
                     value={email}
                     onChange={handleEmailChange}
+                    onKeyDown={(e)=> {
+                      if(e.key === "Enter"){
+                        handleLogin()
+                      }
+                    }}
                     placeholder="Enter your Email Id"
                     className="lg:h-[100%] text-black lg:w-[100%] font-medium lg:p-2 lg:ml-2 border-none focus:outline-none focus:ring-0"
                   />

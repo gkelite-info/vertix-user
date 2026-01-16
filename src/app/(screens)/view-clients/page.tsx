@@ -17,8 +17,6 @@ type Customer = {
   phone: string
   timezone: string
   dob: string
-  occupation: string
-  country: string
 }
 
 const PAGE_SIZE = 25
@@ -32,19 +30,69 @@ export default function Dashboard() {
   const isFirstRender = useRef<boolean>(true)
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
+  const getSerialNumber = (rowIndex: number) => {
+    return (currentPage - 1) * PAGE_SIZE + rowIndex + 1
+  }
+
   const columns: TableColumn<Customer>[] = [
+    {
+      name: "S.No",
+      render: (_row, rowIndex?: number) => getSerialNumber(rowIndex ?? 0),
+    },
     { name: "ClientId", render: (row) => row.customerId },
     { name: "First Name", render: (row) => row.firstname },
     { name: "Last Name", render: (row) => row.lastname },
     { name: "Email", render: (row) => row.email },
     { name: "Phone", render: (row) => row.phone },
+    {
+      name: "Action",
+      render: (row: Customer) => (
+        <button
+          onClick={async () => {
+            try {
+              toast.loading("Generating secure login link...", { id: "taxorg" })
+
+              const customerEmail =
+                (row as unknown as { customer?: { email?: string }, email?: string })
+                  .customer?.email ??
+                (row as unknown as { email?: string }).email
+              console.log("Customer email is", customerEmail);
+              console.log("Rows are", row);
+
+
+              if (!customerEmail) {
+                toast.error("Customer email not found", { id: "taxorg" })
+                return
+              }
+
+
+              const { generateCustomerLoginLink } = await import(
+                "@/app/api/supabaseApi/tax-organizer"
+              )
+
+              const magicLink = await generateCustomerLoginLink(customerEmail)
+              if (!magicLink) throw new Error("Failed to generate login link")
+
+              toast.success("Redirecting to customer portal...", { id: "taxorg" })
+              window.open(magicLink, "_blank")
+            } catch (err: unknown) {
+              const message =
+                err instanceof Error ? err.message : "Failed to open customer portal"
+
+              toast.error(message, { id: "taxorg" })
+            }
+          }}
+          className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer"
+        >
+          Add Service Year
+        </button>
+      ),
+    },
     { name: "Timezone", render: (row) => row.timezone },
     {
       name: "Date of Birth",
       render: (row) => formatDateMMDDYYYY(row.dob),
     },
-    { name: "Occupation", render: (row) => row.occupation },
-    { name: "Country", render: (row) => row.country },
   ]
 
   useEffect(() => {
@@ -81,13 +129,13 @@ export default function Dashboard() {
         setIsLoading(false)
       }
     }
-
-    if (debouncedSearch.trim().length > 0) {
-      fetchUsers()
-    } else {
-      setData([])
-      setTotalCount(0)
-    }
+    fetchUsers()
+    // if (debouncedSearch.trim().length > 0) {
+    //   fetchUsers()
+    // } else {
+    //   setData([])
+    //   setTotalCount(0)
+    // }
   }, [debouncedSearch, currentPage])
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,27 +157,29 @@ export default function Dashboard() {
           />
         </div>
 
-        {search.trim().length > 0 && (
-          <div className="mt-10 w-full flex flex-col justify-between h-[100%]">
-            <div className="flex-grow overflow-auto scrollbar-hide">
-              <Table
-                columns={columns}
-                data={data}
-                isLoading={isLoading}
-              />
-            </div>
-            <div className="mt-auto py-2">
-              {totalCount > 0 && (
-                <Pagination
-                  totalItems={totalCount}
-                  currentPage={currentPage}
-                  pageSize={PAGE_SIZE}
-                  onPageChange={(page) => setCurrentPage(page)}
-                />
-              )}
-            </div>
+        {/* {search.trim().length > 0 && ( */}
+        <div className="mt-10 w-full flex flex-col justify-between h-[100%]">
+          <div className="flex-grow overflow-auto scrollbar-hide">
+            <Table
+              columns={columns}
+              data={data}
+              isLoading={isLoading}
+              currentPage={currentPage}
+              pageSize={PAGE_SIZE}
+            />
           </div>
-        )}
+          <div className="mt-auto py-2">
+            {totalCount > 0 && (
+              <Pagination
+                totalItems={totalCount}
+                currentPage={currentPage}
+                pageSize={PAGE_SIZE}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
+            )}
+          </div>
+        </div>
+        {/* )} */}
       </div>
     </>
   )

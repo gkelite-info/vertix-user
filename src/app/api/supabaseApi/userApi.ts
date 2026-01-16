@@ -24,7 +24,7 @@ type VertixCustomer = {
   occupation?: string
   job?: string
   country?: string
-  timezone: string
+  timezone?: string
   residence_country?: string
   updatedAt?: string
   [key: string]: unknown
@@ -55,7 +55,7 @@ export const getAllCustomers = async (
     const baseQuery = supabaseCustomer
       .from("vertixcustomers")
       .select("*", { count: "exact" })
-      .order("updatedAt", { ascending: false })
+      .order("customerId", { ascending: false })
 
     const process = (rows: VertixCustomer[]): Customer[] =>
       rows.map((row) => ({
