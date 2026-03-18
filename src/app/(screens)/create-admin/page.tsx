@@ -17,6 +17,7 @@ export default function CreateAdmin() {
     password: "",
     confirmPassword: "",
     role: "admin",
+    code: "",
   })
   const [, setEmail] = useState("")
   const [, setEmailError] = useState("")
@@ -100,6 +101,7 @@ export default function CreateAdmin() {
     if (!formData.email) return toast.error("Email is required!")
     if (!formData.phone) return toast.error("Phone number is required!")
     if (!formData.password) return toast.error("Password is required!")
+    if (!formData.code) return toast.error("Code is required!")
     if (!formData.confirmPassword)
       return toast.error("Confirm Password is required!")
     if (formData.password !== formData.confirmPassword) {
@@ -117,6 +119,7 @@ export default function CreateAdmin() {
         phone: formData.phone,
         password: formData.password,
         role: formData.role,
+        code: formData.code?.trim()
       })
       toast.success("Registration successful!")
       setFormData({
@@ -127,6 +130,7 @@ export default function CreateAdmin() {
         password: "",
         confirmPassword: "",
         role: "admin",
+        code: "",
       })
       setPhone("")
       setPhoneCode("")
@@ -207,19 +211,34 @@ export default function CreateAdmin() {
             />
           </div>
 
-          <div className="flex flex-col">
-            <label htmlFor="role" className="text-gray-600 text-sm mb-1">
-              Select Role
-            </label>
-            <select
-              id="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="border-b-2 border-gray-300 text-black font-medium focus:outline-none focus:border-[#1D2B48] py-2"
-            >
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super Admin</option>
-            </select>
+          <div className="flex justify-between">
+            <div className="bg-red-00 flex-2">
+              <label htmlFor="role" className="text-gray-600 text-sm mb-1">
+                Select Role
+              </label>
+              <select
+                id="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="border-b-2 border-gray-300 text-black font-medium focus:outline-none focus:border-[#1D2B48] py-2"
+              >
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
+            <div className="bg-blue-00 flex-2 flex flex-col justify-between">
+              <label htmlFor="role" className="text-gray-600 text-sm mb-1">
+                Code
+              </label>
+              <input type="text"
+                value={formData.code}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))
+                }
+                placeholder="Code"
+                className="border-b-2 border-gray-300 font-medium focus:outline-none text-black"
+              />
+            </div>
           </div>
 
           <div className="flex items-center border-b-2 border-gray-300">
