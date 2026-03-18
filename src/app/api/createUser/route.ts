@@ -25,6 +25,7 @@ export async function POST(req: Request) {
         email: userData.email,
         phone: userData.phone,
         role: userData.role,
+        code: userData.code,
         password: userData.password,
         dateOfJoining: now,
         createdAt: now,

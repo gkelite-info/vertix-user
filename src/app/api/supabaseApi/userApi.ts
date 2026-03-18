@@ -1,4 +1,5 @@
 import { supabase, supabaseCustomer } from "@/api-requests/supabaseClient"
+import { code } from "framer-motion/client"
 
 type Customer = {
   customerId: string
@@ -31,14 +32,15 @@ type VertixCustomer = {
 }
 
 type VertixUser = {
-  userId: string
-  firstname: string
-  lastname: string
-  password: string
-  email: string
-  phone: string
-  createdAt: string
-  [key: string]: unknown
+  userId: string;
+  firstname: string;
+  lastname: string;
+  password: string;
+  email: string;
+  phone: string;
+  code: string;
+  createdAt: string;
+  [key: string]: unknown;
 }
 
 const CUSTOMER_ID_MAX_DIGITS = 9
@@ -192,12 +194,13 @@ export const getUser = async () => {
 }
 
 export const insertUser = async (userData: {
-  firstname: string
-  lastname: string
-  email: string
-  phone: string
-  role: string
-  password: string
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  role: string;
+  code: string;
+  password: string;
 }) => {
   const res = await fetch("/api/createUser", {
     method: "POST",
@@ -207,7 +210,10 @@ export const insertUser = async (userData: {
 
   const data = (await res.json()) as { error?: string }
 
-  if (!res.ok) throw new Error(data.error || "Failed to create user")
+  console.log("data is", userData.code);
+
+
+  if (!res.ok) throw new Error("Failed to create user")
 
   return true
 }
@@ -234,6 +240,7 @@ export const getAllUsers = async (
       email: u.email,
       full_name: `${u.firstname} ${u.lastname}`,
       phone: u.phone,
+      code: u.code,
       password: u.password,
       created_at: u.createdAt,
     }))
